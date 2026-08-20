@@ -18,16 +18,20 @@ public class EmployeeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "employee_code", unique = true, nullable = false)
     @NotBlank
     private String employeeCode;
+
     @NotBlank
     private String name;
+
     @Email
     @NotBlank
     private String email;
+
     @NotBlank
     private String phone;
+
     @NotBlank
     private String position;
 

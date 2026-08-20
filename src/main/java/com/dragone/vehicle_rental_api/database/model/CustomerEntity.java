@@ -29,6 +29,7 @@ public class CustomerEntity {
     private String phone;
 
     @NotBlank
+    @Column(unique = true, nullable = false)
     private String document;
     
 

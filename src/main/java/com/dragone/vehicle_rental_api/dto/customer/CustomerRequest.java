@@ -13,6 +13,9 @@ public record CustomerRequest(
     String email,
 
     @NotBlank
-    String phone
+    String phone,
+
+    @NotBlank
+    String document
 ){
 }

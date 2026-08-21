@@ -4,6 +4,8 @@ import com.dragone.vehicle_rental_api.database.model.CustomerEntity;
 import com.dragone.vehicle_rental_api.database.repository.ICustomerRepository;
 import com.dragone.vehicle_rental_api.dto.customer.CustomerRequest;
 import com.dragone.vehicle_rental_api.dto.customer.CustomerResponse;
+import com.dragone.vehicle_rental_api.exception.CustomerAlredyExistsException;
+import com.dragone.vehicle_rental_api.exception.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +15,9 @@ public class CustomerService {
 
     private final ICustomerRepository customerRepository;
 
-    public CustomerResponse createCustomer(CustomerRequest customerRequest){
+    public CustomerResponse createCustomer(CustomerRequest customerRequest) {
         if (customerRepository.existsByDocument(customerRequest.document())) {
-            throw new RuntimeException("Customer already exists");
+            throw new CustomerAlredyExistsException("Customer already exists");
         }
 
         CustomerEntity customer = CustomerEntity.builder()
@@ -33,21 +35,21 @@ public class CustomerService {
 
     public CustomerResponse getCustomerByDocument(String document){
         CustomerEntity customer = customerRepository.findByDocument(document)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         return toResponse(customer);
     }
 
-    public CustomerResponse getCustomerById(Integer id){
+    public CustomerResponse getCustomerById(Integer id) {
         CustomerEntity customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         return toResponse(customer);
     }
 
-    public CustomerResponse updateCustomer(Integer id, CustomerRequest customerRequest){
+    public CustomerResponse updateCustomer(Integer id, CustomerRequest customerRequest) {
         CustomerEntity customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         customer.setName(customerRequest.name());
         customer.setEmail(customerRequest.email());

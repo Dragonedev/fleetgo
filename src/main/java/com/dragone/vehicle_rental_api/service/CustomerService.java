@@ -4,8 +4,8 @@ import com.dragone.vehicle_rental_api.database.model.CustomerEntity;
 import com.dragone.vehicle_rental_api.database.repository.ICustomerRepository;
 import com.dragone.vehicle_rental_api.dto.customer.CustomerRequest;
 import com.dragone.vehicle_rental_api.dto.customer.CustomerResponse;
-import com.dragone.vehicle_rental_api.exception.CustomerAlreadyExistsException;
-import com.dragone.vehicle_rental_api.exception.CustomerNotFoundException;
+import com.dragone.vehicle_rental_api.exception.customer.CustomerAlreadyExistsException;
+import com.dragone.vehicle_rental_api.exception.customer.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,6 +80,7 @@ public class CustomerService {
 
         customerRepository.save(customer);
     }
+
     private CustomerResponse toResponse(CustomerEntity customer){
         return new CustomerResponse(
                 customer.getId(),

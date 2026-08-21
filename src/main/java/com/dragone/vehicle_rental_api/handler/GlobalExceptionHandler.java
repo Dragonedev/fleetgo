@@ -1,6 +1,11 @@
 package com.dragone.vehicle_rental_api.handler;
 
 import com.dragone.vehicle_rental_api.exception.*;
+import com.dragone.vehicle_rental_api.exception.customer.CustomerAlreadyExistsException;
+import com.dragone.vehicle_rental_api.exception.customer.CustomerNotFoundException;
+import com.dragone.vehicle_rental_api.exception.vehicle.VehicleAlreadyExistsException;
+import com.dragone.vehicle_rental_api.exception.vehicle.VehicleNotFoundException;
+import com.dragone.vehicle_rental_api.exception.vehicle.VehicleOperationNotAllowedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +56,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(VehicleAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleVehicleAlreadyExistsException(CustomerAlreadyExistsException ex){
+        ErrorResponse response = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(VehicleOperationNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> VehicleOperationNotAllowedException(VehicleOperationNotAllowedException ex){
         ErrorResponse response = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.CONFLICT.value())

@@ -1,15 +1,16 @@
 package com.dragone.vehicle_rental_api.service;
 
-import com.dragone.vehicle_rental_api.database.model.CustomerEntity;
 import com.dragone.vehicle_rental_api.database.model.VehicleEntity;
 import com.dragone.vehicle_rental_api.database.model.enums.VehicleStatus;
 import com.dragone.vehicle_rental_api.database.repository.IVehicleRepository;
-import com.dragone.vehicle_rental_api.dto.customer.CustomerResponse;
 import com.dragone.vehicle_rental_api.dto.vehicle.VehicleRequest;
 import com.dragone.vehicle_rental_api.dto.vehicle.VehicleResponse;
-import com.dragone.vehicle_rental_api.exception.VehicleAlreadyExistsException;
-import com.dragone.vehicle_rental_api.exception.VehicleNotFoundException;
+import com.dragone.vehicle_rental_api.exception.vehicle.VehicleAlreadyExistsException;
+import com.dragone.vehicle_rental_api.exception.vehicle.VehicleNotFoundException;
+import com.dragone.vehicle_rental_api.exception.vehicle.VehicleOperationNotAllowedException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,6 +37,58 @@ public class VehicleService {
         VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
 
         return toResponse(savedVehicle);
+    }
+
+    public Page<VehicleResponse> getVehicles(Pageable pageable){
+        return vehicleRepository.findAll(pageable)
+                .map(this::toResponse);
+    }
+
+    public Page<VehicleResponse> getVehiclesByStatus(VehicleStatus status, Pageable pageable){
+        return vehicleRepository.findByStatus(status, pageable)
+                .map(this::toResponse);
+    }
+
+    public VehicleResponse getVehicleById(Integer id){
+        VehicleEntity vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
+
+        return toResponse(vehicle);
+    }
+
+    public VehicleResponse updateVehicle(Integer id, VehicleRequest vehicleRequest){
+        VehicleEntity vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
+
+        if(vehicleRepository.existsByLicensePlateAndIdNot(vehicleRequest.licensePlate(), id)){
+            throw new VehicleAlreadyExistsException("vehicle already exists");
+        }
+
+        vehicle.setLicensePlate(vehicleRequest.licensePlate());
+        vehicle.setBrand(vehicleRequest.brand());
+        vehicle.setModel(vehicleRequest.model());
+        vehicle.setYear(vehicleRequest.year());
+        vehicle.setMileage(vehicleRequest.mileage());
+        vehicle.setDailyRate(vehicleRequest.dailyRate());
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
+
+        VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
+
+        return toResponse(savedVehicle);
+    }
+
+    public void deleteVehicle(Integer id){
+        VehicleEntity vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
+
+        if(vehicle.getStatus() == VehicleStatus.RENTED
+        || vehicle.getStatus() == VehicleStatus.MAINTENANCE){
+            throw new VehicleOperationNotAllowedException("vehicle cannot be deleted in its current status");
+        }
+
+        vehicle.setStatus(VehicleStatus.UNAVAILABLE);
+
+        vehicleRepository.save(vehicle);
     }
 
 

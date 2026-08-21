@@ -38,7 +38,7 @@ public class VehicleService {
         return toResponse(savedVehicle);
     }
 
-    
+
     private VehicleResponse toResponse(VehicleEntity vehicle){
         return new VehicleResponse(
                 vehicle.getId(),

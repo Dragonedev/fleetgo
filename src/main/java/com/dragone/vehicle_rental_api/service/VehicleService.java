@@ -102,6 +102,20 @@ public class VehicleService {
         vehicleRepository.save(vehicle);
     }
 
+    public VehicleResponse reactiveVehicle(Integer id){
+        VehicleEntity vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
+
+        if(vehicle.getStatus() != VehicleStatus.UNAVAILABLE){
+            throw new VehicleOperationNotAllowedException("Vehicle is not unavailable");
+        }
+
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
+
+        VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
+
+        return toResponse(savedVehicle);
+    }
 
     private VehicleResponse toResponse(VehicleEntity vehicle){
         return new VehicleResponse(

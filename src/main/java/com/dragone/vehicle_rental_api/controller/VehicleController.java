@@ -49,7 +49,7 @@ public class VehicleController {
         return vehicleService.updateVehicle(id, vehicleRequest);
     }
 
-    @PutMapping("/status/{id}")
+    @PatchMapping("/{id}/status")
     public VehicleResponse updateVehicleStatus(@PathVariable @Positive Integer id,
                                          @RequestParam @Valid VehicleStatus status){
         return vehicleService.updateVehicleStatus(id, status);
@@ -59,6 +59,11 @@ public class VehicleController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteVehicle(@PathVariable @Positive Integer id){
         vehicleService.deleteVehicle(id);
+    }
+
+    @PatchMapping("/{id}/reactive")
+    public VehicleResponse reactiveVehicle(@PathVariable @Positive Integer id){
+        return vehicleService.reactiveVehicle(id);
     }
 
 

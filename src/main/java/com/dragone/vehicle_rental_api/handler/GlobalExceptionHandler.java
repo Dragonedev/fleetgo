@@ -3,6 +3,7 @@ package com.dragone.vehicle_rental_api.handler;
 import com.dragone.vehicle_rental_api.exception.*;
 import com.dragone.vehicle_rental_api.exception.customer.CustomerAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.customer.CustomerNotFoundException;
+import com.dragone.vehicle_rental_api.exception.customer.CustomerOperationNotAllowedException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleNotFoundException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleOperationNotAllowedException;
@@ -37,6 +38,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomerAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleCustomerAlredyExistsException(CustomerAlreadyExistsException ex){
+        ErrorResponse response = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(CustomerOperationNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> CustomerOperationNotAllowedException(CustomerOperationNotAllowedException ex){
         ErrorResponse response = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.CONFLICT.value())
@@ -88,4 +99,6 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(response);
     }
+
+
 }

@@ -44,16 +44,16 @@ public class VehicleService {
                 .map(this::toResponse);
     }
 
-    public Page<VehicleResponse> getVehiclesByStatus(VehicleStatus status, Pageable pageable){
-        return vehicleRepository.findByStatus(status, pageable)
-                .map(this::toResponse);
-    }
-
     public VehicleResponse getVehicleById(Integer id){
         VehicleEntity vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
         return toResponse(vehicle);
+    }
+
+    public Page<VehicleResponse> getVehiclesByStatus(VehicleStatus status, Pageable pageable){
+        return vehicleRepository.findByStatus(status, pageable)
+                .map(this::toResponse);
     }
 
     public VehicleResponse updateVehicle(Integer id, VehicleRequest vehicleRequest){

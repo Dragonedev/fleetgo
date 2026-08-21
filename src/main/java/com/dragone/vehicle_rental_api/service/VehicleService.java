@@ -77,6 +77,17 @@ public class VehicleService {
         return toResponse(savedVehicle);
     }
 
+    public VehicleResponse updateVehicleStatus(Integer id, VehicleStatus status){
+        VehicleEntity vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
+
+        vehicle.setStatus(status);
+
+        VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
+
+        return toResponse(savedVehicle);
+    }
+
     public void deleteVehicle(Integer id){
         VehicleEntity vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));

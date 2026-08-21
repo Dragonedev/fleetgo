@@ -43,10 +43,16 @@ public class VehicleController {
         return vehicleService.getVehiclesByStatus(status, pageable);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public VehicleResponse updateVehicle(@PathVariable @Positive Integer id,
                                          @RequestBody @Valid VehicleRequest vehicleRequest){
         return vehicleService.updateVehicle(id, vehicleRequest);
+    }
+
+    @PutMapping("/status/{id}")
+    public VehicleResponse updateVehicleStatus(@PathVariable @Positive Integer id,
+                                         @RequestParam @Valid VehicleStatus status){
+        return vehicleService.updateVehicleStatus(id, status);
     }
 
     @DeleteMapping("/{id}")

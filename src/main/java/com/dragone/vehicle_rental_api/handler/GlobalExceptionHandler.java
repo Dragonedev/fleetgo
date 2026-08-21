@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -55,7 +56,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(VehicleAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleVehicleAlreadyExistsException(CustomerAlreadyExistsException ex){
+    public ResponseEntity<ErrorResponse> handleVehicleAlreadyExistsException(VehicleAlreadyExistsException ex){
         ErrorResponse response = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.CONFLICT.value())
@@ -72,5 +73,19 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .message("invalid vehicle status")
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
+
+        return ResponseEntity
+                .badRequest()
+                .body(response);
     }
 }

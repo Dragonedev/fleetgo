@@ -84,10 +84,10 @@ public class CustomerService {
     private CustomerResponse toResponse(CustomerEntity customer){
         return new CustomerResponse(
                 customer.getId(),
-                customer.getDocument(),
                 customer.getName(),
                 customer.getEmail(),
                 customer.getPhone(),
+                customer.getDocument(),
                 customer.getActive()
         );
     }

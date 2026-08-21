@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 
 public record VehicleResponse(
     Integer id,
+    String licensePlate,
     String brand,
     String model,
     Integer year,

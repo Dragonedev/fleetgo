@@ -16,6 +16,9 @@ public record VehicleRequest(
     String brand,
 
     @NotBlank
+    String licensePlate,
+
+    @NotBlank
     String model,
 
     @NotNull

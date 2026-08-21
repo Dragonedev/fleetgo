@@ -24,6 +24,10 @@ public class VehicleEntity {
     private Integer id;
 
     @NotBlank
+    @Column(name = "license_plate", nullable = false)
+    private String licensePlate;
+
+    @NotBlank
     private String brand;
 
     @NotBlank

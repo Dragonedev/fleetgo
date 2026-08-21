@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/customers")
+@RequestMapping("/v1/customers")
 @RequiredArgsConstructor
 @Validated
 public class CustomerController {
@@ -28,6 +28,11 @@ public class CustomerController {
     @GetMapping
     public CustomerResponse getCustomerByDocument(@RequestParam @NotBlank String document){
         return customerService.getCustomerByDocument(document);
+    }
+
+    @GetMapping("/{id}")
+    public CustomerResponse getCustomerById(@PathVariable @Positive Integer id){
+        return customerService.getCustomerById(id);
     }
 
     @PutMapping("/{id}")

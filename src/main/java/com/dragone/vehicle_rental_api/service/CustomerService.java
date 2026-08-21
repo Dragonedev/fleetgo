@@ -38,6 +38,13 @@ public class CustomerService {
         return toResponse(customer);
     }
 
+    public CustomerResponse getCustomerById(Integer id){
+        CustomerEntity customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        return toResponse(customer);
+    }
+
     public CustomerResponse updateCustomer(Integer id, CustomerRequest customerRequest){
         CustomerEntity customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));

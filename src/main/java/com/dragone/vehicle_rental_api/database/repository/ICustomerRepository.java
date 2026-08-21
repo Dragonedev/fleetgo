@@ -11,7 +11,13 @@ public interface ICustomerRepository extends JpaRepository<CustomerEntity, Integ
 
     boolean existsByDocument(String document);
 
-    Optional<CustomerEntity> findByDocument(String document);
+    boolean existsByDocumentAndIdNot(String document, Integer id);
 
-    Page<CustomerEntity> findAll(Pageable pageable);
+    Page<CustomerEntity> findByActiveTrue(Pageable pageable);
+
+    Optional<CustomerEntity> findByIdAndActiveTrue(Integer id);
+
+    Optional<CustomerEntity> findByDocumentAndActiveTrue(String document);
+
+
 }

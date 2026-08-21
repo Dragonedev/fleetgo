@@ -31,6 +31,10 @@ public class CustomerEntity {
     @NotBlank
     @Column(unique = true, nullable = false)
     private String document;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
     
 
 }

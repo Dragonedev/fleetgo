@@ -4,7 +4,7 @@ import com.dragone.vehicle_rental_api.database.model.CustomerEntity;
 import com.dragone.vehicle_rental_api.database.repository.ICustomerRepository;
 import com.dragone.vehicle_rental_api.dto.customer.CustomerRequest;
 import com.dragone.vehicle_rental_api.dto.customer.CustomerResponse;
-import com.dragone.vehicle_rental_api.exception.CustomerAlredyExistsException;
+import com.dragone.vehicle_rental_api.exception.CustomerAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,7 +19,7 @@ public class CustomerService {
 
     public CustomerResponse createCustomer(CustomerRequest customerRequest) {
         if (customerRepository.existsByDocument(customerRequest.document())) {
-            throw new CustomerAlredyExistsException("Customer already exists");
+            throw new CustomerAlreadyExistsException("Customer already exists");
         }
 
         CustomerEntity customer = CustomerEntity.builder()
@@ -27,6 +27,7 @@ public class CustomerService {
                 .email(customerRequest.email())
                 .phone(customerRequest.phone())
                 .document(customerRequest.document())
+                .active(true)
                 .build();
 
         CustomerEntity savedCustomer = customerRepository.save(customer);
@@ -36,28 +37,31 @@ public class CustomerService {
     }
 
     public Page<CustomerResponse> getCustomers(Pageable pageable){
-        return customerRepository.findAll(pageable)
+        return customerRepository.findByActiveTrue(pageable)
                 .map(this::toResponse);
     }
 
     public CustomerResponse getCustomerById(Integer id) {
-        CustomerEntity customer = customerRepository.findById(id)
+        CustomerEntity customer = customerRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         return toResponse(customer);
     }
 
     public CustomerResponse getCustomerByDocument(String document){
-        CustomerEntity customer = customerRepository.findByDocument(document)
+        CustomerEntity customer = customerRepository.findByDocumentAndActiveTrue(document)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         return toResponse(customer);
     }
 
     public CustomerResponse updateCustomer(Integer id, CustomerRequest customerRequest) {
-        CustomerEntity customer = customerRepository.findById(id)
+        CustomerEntity customer = customerRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
+        if (customerRepository.existsByDocumentAndIdNot(customerRequest.document(), id)) {
+            throw new CustomerAlreadyExistsException("Customer already exists");
+        }
         customer.setName(customerRequest.name());
         customer.setEmail(customerRequest.email());
         customer.setPhone(customerRequest.phone());
@@ -67,13 +71,23 @@ public class CustomerService {
 
         return toResponse(savedCustomer);
     }
+
+    public void deleteCustomer(Integer id) {
+        CustomerEntity customer = customerRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+
+        customer.setActive(false);
+
+        customerRepository.save(customer);
+    }
     private CustomerResponse toResponse(CustomerEntity customer){
         return new CustomerResponse(
                 customer.getId(),
                 customer.getDocument(),
                 customer.getName(),
                 customer.getEmail(),
-                customer.getPhone()
+                customer.getPhone(),
+                customer.getActive()
         );
     }
 

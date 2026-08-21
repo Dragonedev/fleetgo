@@ -47,4 +47,10 @@ public class CustomerController {
                                            @Valid @RequestBody CustomerRequest customerRequest){
         return customerService.updateCustomer(id, customerRequest);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCustomer(@PathVariable @Positive Integer id){
+        customerService.deleteCustomer(id);
+    }
 }

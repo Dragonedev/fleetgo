@@ -5,6 +5,7 @@ public record CustomerResponse(
     String name,
     String email,
     String phone,
-    String document
+    String document,
+    Boolean active
 ) {
 }

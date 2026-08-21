@@ -1,6 +1,6 @@
 package com.dragone.vehicle_rental_api.handler;
 
-import com.dragone.vehicle_rental_api.exception.CustomerAlredyExistsException;
+import com.dragone.vehicle_rental_api.exception.CustomerAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.CustomerNotFoundException;
 import com.dragone.vehicle_rental_api.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -31,8 +31,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    @ExceptionHandler(CustomerAlredyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleCustomerAlredyExistsException(CustomerAlredyExistsException ex){
+    @ExceptionHandler(CustomerAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleCustomerAlredyExistsException(CustomerAlreadyExistsException ex){
         ErrorResponse response = ErrorResponse.builder()
                 .message(ex.getMessage())
                 .status(HttpStatus.CONFLICT.value())

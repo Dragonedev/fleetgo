@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +28,18 @@ public class CustomerController {
     }
 
     @GetMapping
-    public CustomerResponse getCustomerByDocument(@RequestParam @NotBlank String document){
-        return customerService.getCustomerByDocument(document);
+    public Page<CustomerResponse> getCustomers(Pageable pageable){
+        return customerService.getCustomers(pageable);
     }
 
     @GetMapping("/{id}")
     public CustomerResponse getCustomerById(@PathVariable @Positive Integer id){
         return customerService.getCustomerById(id);
+    }
+
+    @GetMapping("/document")
+    public CustomerResponse getCustomerByDocument(@RequestParam @NotBlank String document){
+        return customerService.getCustomerByDocument(document);
     }
 
     @PutMapping("/{id}")

@@ -7,6 +7,8 @@ import com.dragone.vehicle_rental_api.dto.customer.CustomerResponse;
 import com.dragone.vehicle_rental_api.exception.CustomerAlredyExistsException;
 import com.dragone.vehicle_rental_api.exception.CustomerNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,15 +35,20 @@ public class CustomerService {
 
     }
 
-    public CustomerResponse getCustomerByDocument(String document){
-        CustomerEntity customer = customerRepository.findByDocument(document)
+    public Page<CustomerResponse> getCustomers(Pageable pageable){
+        return customerRepository.findAll(pageable)
+                .map(this::toResponse);
+    }
+
+    public CustomerResponse getCustomerById(Integer id) {
+        CustomerEntity customer = customerRepository.findById(id)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         return toResponse(customer);
     }
 
-    public CustomerResponse getCustomerById(Integer id) {
-        CustomerEntity customer = customerRepository.findById(id)
+    public CustomerResponse getCustomerByDocument(String document){
+        CustomerEntity customer = customerRepository.findByDocument(document)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
         return toResponse(customer);

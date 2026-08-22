@@ -35,5 +35,9 @@ public class EmployeeEntity {
     @NotBlank
     private String position;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
+
 
 }

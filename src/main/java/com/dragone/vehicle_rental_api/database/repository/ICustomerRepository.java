@@ -19,5 +19,4 @@ public interface ICustomerRepository extends JpaRepository<CustomerEntity, Integ
 
     Optional<CustomerEntity> findByDocumentAndActiveTrue(String document);
 
-
 }

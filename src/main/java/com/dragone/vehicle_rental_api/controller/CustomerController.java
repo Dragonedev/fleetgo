@@ -55,7 +55,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/{id}/reactive")
-    public CustomerResponse reactiveCustomer (@PathVariable @Positive Integer id){
-        return customerService.reactiveCustomer(id);
+    public CustomerResponse reactivateCustomer (@PathVariable @Positive Integer id){
+        return customerService.reactivateCustomer(id);
     }
 }

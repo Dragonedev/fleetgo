@@ -62,8 +62,8 @@ public class VehicleController {
     }
 
     @PatchMapping("/{id}/reactive")
-    public VehicleResponse reactiveVehicle(@PathVariable @Positive Integer id){
-        return vehicleService.reactiveVehicle(id);
+    public VehicleResponse reactivateVehicle(@PathVariable @Positive Integer id){
+        return vehicleService.reactivateVehicle(id);
     }
 
 

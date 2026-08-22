@@ -6,6 +6,7 @@ public record EmployeeResponse(
     String name,
     String email,
     String phone,
-    String position
+    String position,
+    Boolean active
 ) {
 }

@@ -82,11 +82,11 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-    public CustomerResponse reactiveCustomer(Integer id) {
+    public CustomerResponse reactivateCustomer(Integer id) {
         CustomerEntity customer = customerRepository.findById(id)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
 
-        if (customer.getActive() == true) {
+        if (customer.getActive()) {
             throw new CustomerOperationNotAllowedException("Customer is already active");
         }
 

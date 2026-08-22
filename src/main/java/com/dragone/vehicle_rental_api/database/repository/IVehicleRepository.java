@@ -1,6 +1,5 @@
 package com.dragone.vehicle_rental_api.database.repository;
 
-import com.dragone.vehicle_rental_api.database.model.CustomerEntity;
 import com.dragone.vehicle_rental_api.database.model.VehicleEntity;
 import com.dragone.vehicle_rental_api.database.model.enums.VehicleStatus;
 import org.springframework.data.domain.Page;
@@ -15,8 +14,10 @@ public interface IVehicleRepository extends JpaRepository<VehicleEntity, Integer
 
     boolean existsByLicensePlateAndIdNot(String licensePlate, Integer id);
 
-    Page<VehicleEntity> findAll(Pageable pageable);
+    Page<VehicleEntity> findAllByActiveTrue(Pageable pageable);
 
-    Page<VehicleEntity> findByStatus(VehicleStatus status, Pageable pageable);
+    Optional<VehicleEntity> findByIdAndActiveTrue(Integer id);
+
+    Page<VehicleEntity> findByStatusAndActiveTrue(VehicleStatus status, Pageable pageable);
 
 }

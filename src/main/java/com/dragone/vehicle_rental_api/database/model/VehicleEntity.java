@@ -24,7 +24,7 @@ public class VehicleEntity {
     private Integer id;
 
     @NotBlank
-    @Column(name = "license_plate", nullable = false)
+    @Column(name = "license_plate", nullable = false, unique = true)
     private String licensePlate;
 
     @NotBlank
@@ -48,5 +48,8 @@ public class VehicleEntity {
     @Enumerated(EnumType.STRING)
     private VehicleStatus status;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
 
 }

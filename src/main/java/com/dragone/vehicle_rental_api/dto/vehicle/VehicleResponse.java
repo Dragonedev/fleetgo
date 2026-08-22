@@ -18,6 +18,7 @@ public record VehicleResponse(
     Integer year,
     Integer mileage,
     BigDecimal dailyRate,
-    VehicleStatus status
+    VehicleStatus status,
+    Boolean active
 ) {
 }

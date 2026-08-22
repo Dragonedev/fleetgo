@@ -32,6 +32,7 @@ public class VehicleService {
                 .mileage(vehicleRequest.mileage())
                 .dailyRate(vehicleRequest.dailyRate())
                 .status(VehicleStatus.AVAILABLE)
+                .active(true)
                 .build();
 
         VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
@@ -40,24 +41,24 @@ public class VehicleService {
     }
 
     public Page<VehicleResponse> getVehicles(Pageable pageable){
-        return vehicleRepository.findAll(pageable)
+        return vehicleRepository.findAllByActiveTrue(pageable)
                 .map(this::toResponse);
     }
 
     public VehicleResponse getVehicleById(Integer id){
-        VehicleEntity vehicle = vehicleRepository.findById(id)
+        VehicleEntity vehicle = vehicleRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
         return toResponse(vehicle);
     }
 
     public Page<VehicleResponse> getVehiclesByStatus(VehicleStatus status, Pageable pageable){
-        return vehicleRepository.findByStatus(status, pageable)
+        return vehicleRepository.findByStatusAndActiveTrue(status, pageable)
                 .map(this::toResponse);
     }
 
     public VehicleResponse updateVehicle(Integer id, VehicleRequest vehicleRequest){
-        VehicleEntity vehicle = vehicleRepository.findById(id)
+        VehicleEntity vehicle = vehicleRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
         if(vehicleRepository.existsByLicensePlateAndIdNot(vehicleRequest.licensePlate(), id)){
@@ -70,7 +71,6 @@ public class VehicleService {
         vehicle.setYear(vehicleRequest.year());
         vehicle.setMileage(vehicleRequest.mileage());
         vehicle.setDailyRate(vehicleRequest.dailyRate());
-        vehicle.setStatus(VehicleStatus.AVAILABLE);
 
         VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
 
@@ -78,7 +78,7 @@ public class VehicleService {
     }
 
     public VehicleResponse updateVehicleStatus(Integer id, VehicleStatus status){
-        VehicleEntity vehicle = vehicleRepository.findById(id)
+        VehicleEntity vehicle = vehicleRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
         vehicle.setStatus(status);
@@ -89,7 +89,7 @@ public class VehicleService {
     }
 
     public void deleteVehicle(Integer id){
-        VehicleEntity vehicle = vehicleRepository.findById(id)
+        VehicleEntity vehicle = vehicleRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
         if(vehicle.getStatus() == VehicleStatus.RENTED
@@ -97,19 +97,20 @@ public class VehicleService {
             throw new VehicleOperationNotAllowedException("vehicle cannot be deleted in its current status");
         }
 
-        vehicle.setStatus(VehicleStatus.UNAVAILABLE);
+        vehicle.setActive(false);
 
         vehicleRepository.save(vehicle);
     }
 
-    public VehicleResponse reactiveVehicle(Integer id){
+    public VehicleResponse reactivateVehicle(Integer id){
         VehicleEntity vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
-        if(vehicle.getStatus() != VehicleStatus.UNAVAILABLE){
-            throw new VehicleOperationNotAllowedException("Vehicle is not unavailable");
+        if(vehicle.getActive()){
+            throw new VehicleOperationNotAllowedException("vehicle is already active");
         }
 
+        vehicle.setActive(true);
         vehicle.setStatus(VehicleStatus.AVAILABLE);
 
         VehicleEntity savedVehicle = vehicleRepository.save(vehicle);
@@ -126,7 +127,8 @@ public class VehicleService {
                 vehicle.getYear(),
                 vehicle.getMileage(),
                 vehicle.getDailyRate(),
-                vehicle.getStatus()
+                vehicle.getStatus(),
+                vehicle.getActive()
         );
     }
 }

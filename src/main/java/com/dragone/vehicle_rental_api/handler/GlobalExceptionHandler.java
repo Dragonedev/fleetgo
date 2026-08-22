@@ -4,6 +4,9 @@ import com.dragone.vehicle_rental_api.exception.*;
 import com.dragone.vehicle_rental_api.exception.customer.CustomerAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.customer.CustomerNotFoundException;
 import com.dragone.vehicle_rental_api.exception.customer.CustomerOperationNotAllowedException;
+import com.dragone.vehicle_rental_api.exception.employee.EmployeeAlreadyExistsException;
+import com.dragone.vehicle_rental_api.exception.employee.EmployeeNotFoundException;
+import com.dragone.vehicle_rental_api.exception.employee.EmployeeOperationNotAllowedException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleNotFoundException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleOperationNotAllowedException;
@@ -98,6 +101,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(response);
+    }
+
+    @ExceptionHandler(EmployeeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEmployeeAlreadyExistsException(EmployeeAlreadyExistsException ex){
+        ErrorResponse response = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEmployeeNotFoundException(EmployeeNotFoundException ex){
+        ErrorResponse response = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(EmployeeOperationNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> EmployeeOperationNotAllowedException(EmployeeOperationNotAllowedException ex){
+        ErrorResponse response = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.CONFLICT.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
 

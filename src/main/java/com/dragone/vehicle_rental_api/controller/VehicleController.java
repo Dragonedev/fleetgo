@@ -61,7 +61,7 @@ public class VehicleController {
         vehicleService.deleteVehicle(id);
     }
 
-    @PatchMapping("/{id}/reactive")
+    @PatchMapping("/{id}/reactivate")
     public VehicleResponse reactivateVehicle(@PathVariable @Positive Integer id){
         return vehicleService.reactivateVehicle(id);
     }

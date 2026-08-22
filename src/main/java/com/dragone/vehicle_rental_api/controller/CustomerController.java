@@ -54,7 +54,7 @@ public class CustomerController {
         customerService.deleteCustomer(id);
     }
 
-    @PatchMapping("/{id}/reactive")
+    @PatchMapping("/{id}/reactivate")
     public CustomerResponse reactivateCustomer (@PathVariable @Positive Integer id){
         return customerService.reactivateCustomer(id);
     }

@@ -15,6 +15,9 @@ public record RentalOrderResponse(
     BigDecimal totalAmount,
     PaymentMethod paymentMethod,
     PaymentStatus paymentStatus,
-    RentalOrderStatus status
+    RentalOrderStatus status,
+    Integer customerId,
+    Integer vehicleId,
+    Integer employeeId
 ) {
 }

@@ -10,14 +10,22 @@ import java.time.LocalDate;
 
 public record RentalOrderRequest(
 
-    @NotNull
-    LocalDate startDate,
+        @NotNull
+        LocalDate startDate,
 
-    @NotNull
-    LocalDate endDate,
+        @NotNull
+        LocalDate endDate,
 
-    @NotNull
-    PaymentMethod paymentMethod
+        @NotNull
+        PaymentMethod paymentMethod,
 
+        @NotNull
+        Integer customerId,
+
+        @NotNull
+        Integer vehicleId,
+
+        @NotNull
+        Integer employeeId
 ) {
 }

@@ -1,9 +1,11 @@
 package com.dragone.vehicle_rental_api.controller;
 
+import com.dragone.vehicle_rental_api.database.model.enums.RentalOrderStatus;
 import com.dragone.vehicle_rental_api.dto.rental_order.RentalOrderRequest;
 import com.dragone.vehicle_rental_api.dto.rental_order.RentalOrderResponse;
 import com.dragone.vehicle_rental_api.service.RentalOrderService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,11 @@ public class RentalOrderController {
     @GetMapping("/{id}")
     public RentalOrderResponse getRentalOrderById(@PathVariable @Positive Integer id) {
         return rentalOrderService.getRentalOrderById(id);
+    }
+
+    @GetMapping("/status")
+    public Page<RentalOrderResponse> getRentalOrderByStatus(@RequestParam RentalOrderStatus status, Pageable pageable) {
+        return rentalOrderService.getRentalOrderByStatus(status, pageable);
     }
 
     @GetMapping
@@ -60,7 +67,7 @@ public class RentalOrderController {
     public RentalOrderResponse finishRental(@PathVariable @Positive Integer id) {
         return rentalOrderService.finishRental(id);
     }
-    
+
     @PatchMapping("/{id}/pay")
     public RentalOrderResponse payRentalOrder(@PathVariable @Positive Integer id){
         return rentalOrderService.payRentalOrder(id);

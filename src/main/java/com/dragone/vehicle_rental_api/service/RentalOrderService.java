@@ -89,6 +89,11 @@ public class RentalOrderService {
                 .map(this::toResponse);
     }
 
+    public Page<RentalOrderResponse> getRentalOrderByStatus(RentalOrderStatus status, Pageable pageable){
+        return rentalOrderRepository.findByStatus(status, pageable)
+                .map(this::toResponse);
+    }
+
     public RentalOrderResponse updateRentalOrders(Integer id, RentalOrderRequest rentalOrderRequest){
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));

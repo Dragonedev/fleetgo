@@ -4,7 +4,6 @@ import com.dragone.vehicle_rental_api.database.model.CustomerEntity;
 import com.dragone.vehicle_rental_api.database.model.EmployeeEntity;
 import com.dragone.vehicle_rental_api.database.model.RentalOrderEntity;
 import com.dragone.vehicle_rental_api.database.model.VehicleEntity;
-import com.dragone.vehicle_rental_api.database.model.enums.PaymentMethod;
 import com.dragone.vehicle_rental_api.database.model.enums.PaymentStatus;
 import com.dragone.vehicle_rental_api.database.model.enums.RentalOrderStatus;
 import com.dragone.vehicle_rental_api.database.model.enums.VehicleStatus;
@@ -12,7 +11,6 @@ import com.dragone.vehicle_rental_api.database.repository.ICustomerRepository;
 import com.dragone.vehicle_rental_api.database.repository.IEmployeeRepository;
 import com.dragone.vehicle_rental_api.database.repository.IRentalOrderRepository;
 import com.dragone.vehicle_rental_api.database.repository.IVehicleRepository;
-import com.dragone.vehicle_rental_api.dto.employee.EmployeeResponse;
 import com.dragone.vehicle_rental_api.dto.rental_order.RentalOrderRequest;
 import com.dragone.vehicle_rental_api.dto.rental_order.RentalOrderResponse;
 import com.dragone.vehicle_rental_api.exception.customer.CustomerNotFoundException;
@@ -21,14 +19,12 @@ import com.dragone.vehicle_rental_api.exception.rental_order.RentalOrderNotFound
 import com.dragone.vehicle_rental_api.exception.rental_order.RentalOrderOperationNotAllowedException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleNotFoundException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleOperationNotAllowedException;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 @RequiredArgsConstructor
@@ -97,6 +93,7 @@ public class RentalOrderService {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
+
         rentalOrder.setStartDate(rentalOrderRequest.startDate());
         rentalOrder.setEndDate(rentalOrderRequest.endDate());
         rentalOrder.setPaymentMethod(rentalOrderRequest.paymentMethod());
@@ -110,17 +107,31 @@ public class RentalOrderService {
         EmployeeEntity employee = employeeRepository.findByIdAndActiveTrue(rentalOrderRequest.employeeId())
                 .orElseThrow(() -> new EmployeeNotFoundException("employee not found"));
 
+        if(!rentalOrderRequest.startDate().isBefore(rentalOrderRequest.endDate())){
+            throw new RentalOrderOperationNotAllowedException("Start date must be before end date");
+        }
+
+        long days = ChronoUnit.DAYS.between(rentalOrderRequest.startDate(), rentalOrderRequest.endDate());
+
+        BigDecimal totalAmount = vehicle.getDailyRate()
+                .multiply(BigDecimal.valueOf(days));
+
+        rentalOrder.setTotalAmount(totalAmount);
         rentalOrder.setCustomer(customer);
         rentalOrder.setVehicle(vehicle);
         rentalOrder.setEmployee(employee);
 
         RentalOrderEntity savedRentalOrder = rentalOrderRepository.save(rentalOrder);
-        return toResponse(rentalOrder);
+        return toResponse(savedRentalOrder);
     }
 
     public RentalOrderResponse cancelRentalOrder(Integer id){
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
+
+        if (rentalOrder.getStatus() != RentalOrderStatus.CONFIRMED) {
+            throw new RentalOrderOperationNotAllowedException("only confirmed rental orders can be cancelled");
+        }
 
         rentalOrder.setStatus(RentalOrderStatus.CANCELLED);
 
@@ -146,6 +157,10 @@ public class RentalOrderService {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
+        if (rentalOrder.getVehicle().getStatus() != VehicleStatus.AVAILABLE) {
+            throw new RentalOrderOperationNotAllowedException("vehicle is not available");
+        }
+
         if (rentalOrder.getStatus() != RentalOrderStatus.CONFIRMED) {
             throw new RentalOrderOperationNotAllowedException("only confirmed rental orders can start rental");
         }
@@ -157,7 +172,6 @@ public class RentalOrderService {
         vehicleRepository.save(vehicle);
 
         RentalOrderEntity savedRentalOrder = rentalOrderRepository.save(rentalOrder);
-
         return toResponse(savedRentalOrder);
     }
 
@@ -176,7 +190,6 @@ public class RentalOrderService {
         vehicleRepository.save(vehicle);
 
         RentalOrderEntity savedRentalOrder = rentalOrderRepository.save(rentalOrder);
-
         return toResponse(savedRentalOrder);
     }
 
@@ -194,6 +207,7 @@ public class RentalOrderService {
 
         return toResponse(savedRentalOrder);
     }
+
     private RentalOrderResponse toResponse(RentalOrderEntity rentalOrder){
         return new RentalOrderResponse(
                 rentalOrder.getId(),

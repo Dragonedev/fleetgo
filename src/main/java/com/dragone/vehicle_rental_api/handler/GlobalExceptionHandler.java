@@ -7,6 +7,7 @@ import com.dragone.vehicle_rental_api.exception.customer.CustomerOperationNotAll
 import com.dragone.vehicle_rental_api.exception.employee.EmployeeAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.employee.EmployeeNotFoundException;
 import com.dragone.vehicle_rental_api.exception.employee.EmployeeOperationNotAllowedException;
+import com.dragone.vehicle_rental_api.exception.rental_order.RentalOrderNotFoundException;
 import com.dragone.vehicle_rental_api.exception.rental_order.RentalOrderOperationNotAllowedException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleAlreadyExistsException;
 import com.dragone.vehicle_rental_api.exception.vehicle.VehicleNotFoundException;
@@ -91,8 +92,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(
-            MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
 
         ErrorResponse response = ErrorResponse.builder()
                 .message("invalid vehicle status")
@@ -143,6 +143,20 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+    @ExceptionHandler(RentalOrderNotFoundException.class)
+
+    public ResponseEntity<ErrorResponse> RentalOrderNotFoundException(RentalOrderNotFoundException ex) {
+        ErrorResponse response = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+
+
 
 
 }

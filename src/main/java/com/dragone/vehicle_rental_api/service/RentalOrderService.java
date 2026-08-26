@@ -180,6 +180,20 @@ public class RentalOrderService {
         return toResponse(savedRentalOrder);
     }
 
+    public RentalOrderResponse payRentalOrder(Integer id){
+        RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
+                .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
+
+        if (rentalOrder.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new RentalOrderOperationNotAllowedException("rental order is already paid");
+        }
+
+        rentalOrder.setPaymentStatus(PaymentStatus.PAID);
+
+        RentalOrderEntity savedRentalOrder = rentalOrderRepository.save(rentalOrder);
+
+        return toResponse(savedRentalOrder);
+    }
     private RentalOrderResponse toResponse(RentalOrderEntity rentalOrder){
         return new RentalOrderResponse(
                 rentalOrder.getId(),

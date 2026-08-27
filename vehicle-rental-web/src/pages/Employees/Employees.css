@@ -1,0 +1,282 @@
+.employees-page {
+  min-height: calc(100vh - 70px);
+  padding: 48px 40px;
+  background: #f5f7fb;
+}
+
+/* HEADER */
+
+.employees-header {
+  max-width: 1200px;
+  margin: 0 auto 32px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+}
+
+.page-label {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #0051ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.employees-header h1 {
+  margin: 0;
+
+  color: #00183d;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+}
+
+.employees-header p {
+  margin: 8px 0 0;
+
+  color: #6b7280;
+  font-size: 15px;
+}
+
+/* BOTÃO */
+
+.new-employee-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 11px 18px;
+
+  background: #0051ff;
+  color: #ffffff;
+
+  border: 1px solid #0051ff;
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.new-employee-button:hover {
+  background: #0045db;
+}
+
+.new-employee-button span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* CARD */
+
+.employees-card {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  overflow: hidden;
+}
+
+/* CARD HEADER */
+
+.employees-card-header {
+  padding: 22px 24px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.employees-card-header h2 {
+  margin: 0;
+
+  color: #00183d;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.employees-card-header p {
+  margin: 5px 0 0;
+
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.employee-count {
+  padding: 6px 10px;
+
+  color: #0051ff;
+  background: #eff6ff;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* TABELA */
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.employees-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.employees-table th {
+  padding: 13px 24px;
+
+  background: #f8fafc;
+
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.employees-table td {
+  padding: 17px 24px;
+
+  color: #475569;
+  font-size: 14px;
+
+  border-top: 1px solid #eef0f3;
+}
+
+.employees-table tbody tr:hover {
+  background: #fafcff;
+}
+
+/* FUNCIONÁRIO */
+
+.employee-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.employee-avatar {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #eaf1ff;
+  color: #0051ff;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.employee-info strong {
+  display: block;
+
+  color: #172033;
+  font-size: 14px;
+}
+
+.employee-info span {
+  display: block;
+  margin-top: 2px;
+
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* CÓDIGO */
+
+.employee-code {
+  color: #475569;
+
+  font-family: monospace;
+  font-size: 13px;
+}
+
+/* STATUS */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 9px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.active {
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+/* AÇÃO */
+
+.action-button {
+  padding: 6px 10px;
+
+  background: transparent;
+  color: #0051ff;
+
+  border: 1px solid #dbe5ff;
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background: #eff6ff;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 768px) {
+  .employees-page {
+    padding: 30px 16px;
+  }
+
+  .employees-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .new-employee-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .employees-card-header {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .employees-table th,
+  .employees-table td {
+    padding: 13px 16px;
+  }
+}

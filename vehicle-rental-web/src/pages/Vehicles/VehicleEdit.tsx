@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import Navbar from '../components/Navbar'
+import Navbar from '../../components/Navbar'
 import './VehicleForm.css'
 
 function VehicleEdit() {

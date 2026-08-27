@@ -1,28 +1,99 @@
+/* No seu index.css ou App.css principal */
+html {
+  /* Reserva o espaço da barra de rolagem mesmo em páginas curtas */
+  scrollbar-gutter: stable;
+  
+  /* Fallback para navegadores legados que não suportam scrollbar-gutter */
+  overflow-y: scroll; 
+}
+.navbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #00183d; /* Deep Navy corporativo */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
 .navbar {
+  max-width: 1280px;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 40px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 40px;
 }
 
-.navbar h2 {
-  margin: 0;
-  font-size: 22px;
+/* Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
 }
 
+.navbar-logo:hover {
+  opacity: 0.9;
+}
+
+/* Links de Navegação */
 .navbar-links {
   display: flex;
-  gap: 24px;
+  align-items: center;
+  gap: 8px;
 }
 
 .navbar-links a {
+  box-sizing: border-box; /* Força o navegador a travar as dimensões exatas */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  position: relative;
   text-decoration: none;
-  color: #374151;
+  color: #94a3b8;
   font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  
+  padding: 8px 16px;
+  border-radius: 6px;
+  
+  /* Borda transparente pré-alocada de 1px */
+  border: 1px solid transparent; 
+  background-color: transparent;
+
+  /* Promove a renderização para GPU e evita recalculamento de layout */
+  will-change: background-color, border-color, color;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
+/* Efeito Hover */
 .navbar-links a:hover {
-  color: #2563eb;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Item Ativo (Página Atual) */
+.navbar-links a.active {
+  color: #ffffff;
+  font-weight: 500; /* Estritamente idêntico ao estado normal */
+  background-color: rgba(0, 81, 255, 0.2);
+  border-color: rgba(0, 81, 255, 0.4);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 20px;
+  }
+
+  .navbar-links {
+    gap: 4px;
+  }
+
+  .navbar-links a {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
 }

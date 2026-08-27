@@ -9,15 +9,21 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record RentalOrderResponse(
-    Integer id,
-    LocalDate startDate,
-    LocalDate endDate,
-    BigDecimal totalAmount,
-    PaymentMethod paymentMethod,
-    PaymentStatus paymentStatus,
-    RentalOrderStatus status,
-    Integer customerId,
-    Integer vehicleId,
-    Integer employeeId
+        Integer id,
+        LocalDate startDate,
+        LocalDate endDate,
+        BigDecimal totalAmount,
+        PaymentMethod paymentMethod,
+        PaymentStatus paymentStatus,
+        RentalOrderStatus status,
+
+        Integer customerId,
+        String customerName,
+
+        Integer vehicleId,
+        String vehicleModel,
+
+        Integer employeeId,
+        String employeeName
 ) {
 }

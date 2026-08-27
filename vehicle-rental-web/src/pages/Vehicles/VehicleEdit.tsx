@@ -2,7 +2,7 @@ import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Navbar from '../../components/Navbar'
-import './VehicleForm.css'
+import '../../styles/FormStyles.css'
 
 function VehicleEdit() {
   const { id } = useParams()
@@ -14,25 +14,37 @@ function VehicleEdit() {
   const [year, setYear] = useState('')
   const [mileage, setMileage] = useState('')
   const [dailyRate, setDailyRate] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     fetch(`http://localhost:8085/v1/vehicles/${id}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Erro ao buscar dados do veículo')
+        }
+        return response.json()
+      })
       .then((vehicle) => {
-        setBrand(vehicle.brand)
-        setModel(vehicle.model)
-        setLicensePlate(vehicle.licensePlate)
-        setYear(String(vehicle.year))
-        setMileage(String(vehicle.mileage))
-        setDailyRate(String(vehicle.dailyRate))
+        setBrand(vehicle.brand || '')
+        setModel(vehicle.model || '')
+        setLicensePlate(vehicle.licensePlate || '')
+        setYear(vehicle.year ? String(vehicle.year) : '')
+        setMileage(vehicle.mileage !== undefined ? String(vehicle.mileage) : '')
+        setDailyRate(vehicle.dailyRate ? String(vehicle.dailyRate) : '')
       })
       .catch((error) => {
         console.error(error)
+        alert('Não foi possível carregar as informações do veículo.')
+      })
+      .finally(() => {
+        setLoading(false)
       })
   }, [id])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    setSubmitting(true)
 
     const vehicle = {
       brand,
@@ -61,98 +73,126 @@ function VehicleEdit() {
 
       alert('Veículo atualizado com sucesso!')
       navigate('/vehicles')
-
     } catch (error) {
       console.error(error)
       alert('Não foi possível atualizar o veículo.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
   return (
-    <div>
+    <div className="page-wrapper">
       <Navbar />
 
       <main className="vehicle-form-page">
-        <h1>Editar veículo</h1>
-        <p>Atualize os dados do veículo.</p>
+        <header className="form-header">
+          <h1>Editar Veículo</h1>
+          <p>Atualize os dados e valores do veículo selecionado.</p>
+        </header>
 
-        <form className="vehicle-form" onSubmit={handleSubmit}>
-
-          <div className="form-group">
-            <label>Marca</label>
-            <input
-              type="text"
-              value={brand}
-              onChange={(event) => setBrand(event.target.value)}
-              required
-            />
+        {loading ? (
+          <div className="loading-state">
+            <div className="spinner" />
+            <p>Carregando dados do veículo...</p>
           </div>
+        ) : (
+          <form className="vehicle-form" onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="brand">Marca</label>
+                <input
+                  id="brand"
+                  type="text"
+                  value={brand}
+                  onChange={(event) => setBrand(event.target.value)}
+                  placeholder="Ex: Toyota"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label>Modelo</label>
-            <input
-              type="text"
-              value={model}
-              onChange={(event) => setModel(event.target.value)}
-              required
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="model">Modelo</label>
+                <input
+                  id="model"
+                  type="text"
+                  value={model}
+                  onChange={(event) => setModel(event.target.value)}
+                  placeholder="Ex: Corolla"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label>Placa</label>
-            <input
-              type="text"
-              value={licensePlate}
-              onChange={(event) => setLicensePlate(event.target.value)}
-              required
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="licensePlate">Placa</label>
+                <input
+                  id="licensePlate"
+                  type="text"
+                  value={licensePlate}
+                  onChange={(event) => setLicensePlate(event.target.value)}
+                  placeholder="Ex: ABC1D23"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label>Ano</label>
-            <input
-              type="number"
-              value={year}
-              onChange={(event) => setYear(event.target.value)}
-              required
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="year">Ano</label>
+                <input
+                  id="year"
+                  type="number"
+                  value={year}
+                  onChange={(event) => setYear(event.target.value)}
+                  placeholder="Ex: 2024"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label>Quilometragem</label>
-            <input
-              type="number"
-              value={mileage}
-              onChange={(event) => setMileage(event.target.value)}
-              required
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="mileage">Quilometragem (km)</label>
+                <input
+                  id="mileage"
+                  type="number"
+                  value={mileage}
+                  onChange={(event) => setMileage(event.target.value)}
+                  placeholder="Ex: 15000"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label>Diária</label>
-            <input
-              type="number"
-              step="0.01"
-              value={dailyRate}
-              onChange={(event) => setDailyRate(event.target.value)}
-              required
-            />
-          </div>
+              <div className="form-group">
+                <label htmlFor="dailyRate">Valor da Diária (R$)</label>
+                <input
+                  id="dailyRate"
+                  type="number"
+                  step="0.01"
+                  value={dailyRate}
+                  onChange={(event) => setDailyRate(event.target.value)}
+                  placeholder="Ex: 180.00"
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="form-actions">
-            <button
-              type="button"
-              onClick={() => navigate('/vehicles')}
-            >
-              Cancelar
-            </button>
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => navigate('/vehicles')}
+                disabled={submitting}
+              >
+                Cancelar
+              </button>
 
-            <button type="submit">
-              Salvar alterações
-            </button>
-          </div>
-
-        </form>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={submitting}
+              >
+                {submitting ? 'Salvando...' : 'Salvar Alterações'}
+              </button>
+            </div>
+          </form>
+        )}
       </main>
     </div>
   )

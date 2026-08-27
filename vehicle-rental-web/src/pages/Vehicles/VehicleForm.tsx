@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Navbar from '../../components/Navbar'
-import './VehicleForm.css'
+import '../../styles/FormStyles.css' 
 
 function VehicleForm() {
   const navigate = useNavigate()
@@ -64,8 +64,8 @@ function VehicleForm() {
     <div className="page-wrapper">
       <Navbar />
 
-      <main className="vehicle-form-page">
-        <header className="vehicle-form-header">
+      <main className="form-page">
+        <header className="form-header">
           <button type="button" className="back-link" onClick={handleCancel}>
             ← Voltar para listagem
           </button>
@@ -73,8 +73,8 @@ function VehicleForm() {
           <p>Preencha os dados abaixo para cadastrar um novo veículo na frota.</p>
         </header>
 
-        <section className="vehicle-form-card">
-          <form className="vehicle-form" onSubmit={handleSubmit}>
+        <section className="form-card">
+          <form onSubmit={handleSubmit}>
             <div className="form-section">
               <div className="section-title">
                 <h2>Informações Técnicas</h2>
@@ -135,7 +135,6 @@ function VehicleForm() {
 
                 <div className="form-group">
                   <label htmlFor="mileage">Quilometragem (km)</label>
-
                   <input
                     id="mileage"
                     type="number"
@@ -158,7 +157,7 @@ function VehicleForm() {
                       min="0"
                       value={dailyRate}
                       onChange={(e) => setDailyRate(e.target.value)}
-                      placeholder="150,00"
+                      placeholder="150.00"
                       required
                     />
                   </div>
@@ -176,7 +175,7 @@ function VehicleForm() {
             <div className="form-actions">
               <button
                 type="button"
-                className="button button-secondary"
+                className="btn-secondary"
                 onClick={handleCancel}
                 disabled={isSubmitting}
               >
@@ -185,7 +184,7 @@ function VehicleForm() {
 
               <button
                 type="submit"
-                className="button button-primary"
+                className="btn-primary"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

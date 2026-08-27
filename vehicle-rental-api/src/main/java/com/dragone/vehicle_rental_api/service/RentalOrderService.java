@@ -37,21 +37,21 @@ public class RentalOrderService {
     private final IEmployeeRepository employeeRepository;
 
 
-    public RentalOrderResponse createRentalOrder(RentalOrderRequest rentalOrderRequest){
+    public RentalOrderResponse createRentalOrder(RentalOrderRequest rentalOrderRequest) {
         CustomerEntity customer = customerRepository.findByIdAndActiveTrue(rentalOrderRequest.customerId())
-                .orElseThrow(()-> new CustomerNotFoundException("customer not found"));
+                .orElseThrow(() -> new CustomerNotFoundException("customer not found"));
 
         VehicleEntity vehicle = vehicleRepository.findByIdAndActiveTrue(rentalOrderRequest.vehicleId())
-                .orElseThrow(()-> new VehicleNotFoundException("vehicle not found"));
+                .orElseThrow(() -> new VehicleNotFoundException("vehicle not found"));
 
-        if(vehicle.getStatus() != VehicleStatus.AVAILABLE){
+        if (vehicle.getStatus() != VehicleStatus.AVAILABLE) {
             throw new VehicleOperationNotAllowedException("vehicle is not available");
         }
 
         EmployeeEntity employee = employeeRepository.findByIdAndActiveTrue(rentalOrderRequest.employeeId())
-                .orElseThrow(()-> new EmployeeNotFoundException("employee not found"));
+                .orElseThrow(() -> new EmployeeNotFoundException("employee not found"));
 
-        if(!rentalOrderRequest.startDate().isBefore(rentalOrderRequest.endDate())){
+        if (!rentalOrderRequest.startDate().isBefore(rentalOrderRequest.endDate())) {
             throw new RentalOrderOperationNotAllowedException("Start date must be before end date");
         }
 
@@ -77,24 +77,24 @@ public class RentalOrderService {
 
     }
 
-    public RentalOrderResponse getRentalOrderById(Integer id){
+    public RentalOrderResponse getRentalOrderById(Integer id) {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
         return toResponse(rentalOrder);
     }
 
-    public Page<RentalOrderResponse> getRentalOrders(Pageable pageable){
+    public Page<RentalOrderResponse> getRentalOrders(Pageable pageable) {
         return rentalOrderRepository.findAll(pageable)
                 .map(this::toResponse);
     }
 
-    public Page<RentalOrderResponse> getRentalOrderByStatus(RentalOrderStatus status, Pageable pageable){
+    public Page<RentalOrderResponse> getRentalOrderByStatus(RentalOrderStatus status, Pageable pageable) {
         return rentalOrderRepository.findByStatus(status, pageable)
                 .map(this::toResponse);
     }
 
-    public RentalOrderResponse updateRentalOrders(Integer id, RentalOrderRequest rentalOrderRequest){
+    public RentalOrderResponse updateRentalOrders(Integer id, RentalOrderRequest rentalOrderRequest) {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
@@ -112,7 +112,7 @@ public class RentalOrderService {
         EmployeeEntity employee = employeeRepository.findByIdAndActiveTrue(rentalOrderRequest.employeeId())
                 .orElseThrow(() -> new EmployeeNotFoundException("employee not found"));
 
-        if(!rentalOrderRequest.startDate().isBefore(rentalOrderRequest.endDate())){
+        if (!rentalOrderRequest.startDate().isBefore(rentalOrderRequest.endDate())) {
             throw new RentalOrderOperationNotAllowedException("Start date must be before end date");
         }
 
@@ -130,7 +130,7 @@ public class RentalOrderService {
         return toResponse(savedRentalOrder);
     }
 
-    public RentalOrderResponse cancelRentalOrder(Integer id){
+    public RentalOrderResponse cancelRentalOrder(Integer id) {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
@@ -144,7 +144,7 @@ public class RentalOrderService {
         return toResponse(savedRentalOrder);
     }
 
-    public RentalOrderResponse confirmRentalOrder(Integer id){
+    public RentalOrderResponse confirmRentalOrder(Integer id) {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
@@ -198,7 +198,7 @@ public class RentalOrderService {
         return toResponse(savedRentalOrder);
     }
 
-    public RentalOrderResponse payRentalOrder(Integer id){
+    public RentalOrderResponse payRentalOrder(Integer id) {
         RentalOrderEntity rentalOrder = rentalOrderRepository.findById(id)
                 .orElseThrow(() -> new RentalOrderNotFoundException("rental order not found"));
 
@@ -213,7 +213,7 @@ public class RentalOrderService {
         return toResponse(savedRentalOrder);
     }
 
-    private RentalOrderResponse toResponse(RentalOrderEntity rentalOrder){
+    private RentalOrderResponse toResponse(RentalOrderEntity rentalOrder) {
         return new RentalOrderResponse(
                 rentalOrder.getId(),
                 rentalOrder.getStartDate(),
@@ -222,9 +222,15 @@ public class RentalOrderService {
                 rentalOrder.getPaymentMethod(),
                 rentalOrder.getPaymentStatus(),
                 rentalOrder.getStatus(),
+
                 rentalOrder.getCustomer().getId(),
+                rentalOrder.getCustomer().getName(),
+
                 rentalOrder.getVehicle().getId(),
-                rentalOrder.getEmployee().getId()
+                rentalOrder.getVehicle().getModel(),
+
+                rentalOrder.getEmployee().getId(),
+                rentalOrder.getEmployee().getName()
         );
     }
 }

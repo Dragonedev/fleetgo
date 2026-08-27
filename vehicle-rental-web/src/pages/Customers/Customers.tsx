@@ -6,9 +6,12 @@ import './Customers.css'
 interface Customer {
   id: number
   name: string
-  cpf: string
+  email?: string
+  document?: string // Corrigido de cpf para document
+  cpf?: string      // Fallback
   phone: string
-  status: string
+  active?: boolean  // Campo booleano retornado pelo Spring Boot
+  status?: string   // Campo alternativo caso a API envie String
 }
 
 function Customers() {
@@ -24,7 +27,7 @@ function Customers() {
         return response.json()
       })
       .then((data) => {
-        setCustomers(data.content || data || [])
+        setCustomers(Array.isArray(data) ? data : data.content || [])
       })
       .catch((error) => {
         console.error(error)
@@ -64,8 +67,19 @@ function Customers() {
     }
   }
 
-  const renderStatusBadge = (status: string) => {
-    const statusNormalized = status?.toUpperCase() || ''
+  // Função atualizada para lidar com boolean (active) e string (status)
+  const renderStatusBadge = (customer: Customer) => {
+    // Se a API envia a propriedade booleana 'active'
+    if (customer.active !== undefined) {
+      return customer.active ? (
+        <span className="badge badge-success">Ativo</span>
+      ) : (
+        <span className="badge badge-danger">Inativo</span>
+      )
+    }
+
+    // Se a API envia uma string 'status'
+    const statusNormalized = customer.status?.toUpperCase() || ''
 
     if (statusNormalized === 'ATIVO' || statusNormalized === 'ACTIVE') {
       return <span className="badge badge-success">Ativo</span>
@@ -77,7 +91,8 @@ function Customers() {
       return <span className="badge badge-warning">Pendente</span>
     }
 
-    return <span className="badge badge-neutral">{status}</span>
+    // Caso padrão quando cadastrado recente ou sem campo de status no banco
+    return <span className="badge badge-success">Ativo</span>
   }
 
   return (
@@ -114,7 +129,7 @@ function Customers() {
               <thead>
                 <tr>
                   <th>Nome</th>
-                  <th>CPF</th>
+                  <th>Documento</th>
                   <th>Telefone</th>
                   <th>Status</th>
                   <th className="actions-header">Ações</th>
@@ -128,10 +143,12 @@ function Customers() {
                       <span className="customer-name">{customer.name}</span>
                     </td>
                     <td>
-                      <span className="info-mono">{customer.cpf}</span>
+                      <span className="info-mono">
+                        {customer.document || customer.cpf || '—'}
+                      </span>
                     </td>
-                    <td>{customer.phone}</td>
-                    <td>{renderStatusBadge(customer.status)}</td>
+                    <td>{customer.phone || '—'}</td>
+                    <td>{renderStatusBadge(customer)}</td>
 
                     <td>
                       <div className="table-actions">

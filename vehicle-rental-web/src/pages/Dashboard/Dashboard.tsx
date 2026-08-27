@@ -200,7 +200,6 @@ function Dashboard() {
           const vehicle = rental.vehicle || rental.car || {}
           const vehicleName = getVehicleName(vehicle)
           const plate = getPlate(vehicle)
-          const plateInfo = plate ? ` (${plate})` : ''
 
           let description = `Locacao #${rental.id || '??'}`
           if (vehicleName) {

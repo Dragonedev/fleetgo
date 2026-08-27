@@ -1,20 +1,105 @@
-import type { FormEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../../components/Navbar'
+
+// REMOVIDO: import Navbar from '../../components/Navbar'
 import '../../styles/FormStyles.css'
+
+interface EmployeeFormData {
+  name: string
+  employeeCode: string
+  email: string
+  phone: string
+  position: string
+}
+
+const API_URL = 'http://localhost:8085/v1/employees'
+
+const INITIAL_FORM_DATA: EmployeeFormData = {
+  name: '',
+  employeeCode: '',
+  email: '',
+  phone: '',
+  position: '',
+}
 
 function EmployeeForm() {
   const navigate = useNavigate()
 
-  const [name, setName] = useState('')
-  const [employeeCode, setEmployeeCode] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [position, setPosition] = useState('')
-
+  const [formData, setFormData] = useState<EmployeeFormData>(INITIAL_FORM_DATA)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // =========================================================
+  // TRATAMENTO DE ERROS
+  // =========================================================
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof TypeError) {
+      return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
+    }
+
+    if (error instanceof Error) {
+      return error.message
+    }
+
+    return 'Ocorreu um erro inesperado. Tente novamente.'
+  }
+
+  const getApiErrorMessage = (status: number, data: any): string => {
+    if (data?.message) {
+      return data.message
+    }
+
+    if (data?.error) {
+      return data.error
+    }
+
+    switch (status) {
+      case 400:
+        return 'Os dados informados são inválidos.'
+      case 401:
+        return 'Você não está autorizado a realizar esta operação.'
+      case 403:
+        return 'Você não tem permissão para realizar esta operação.'
+      case 404:
+        return 'Funcionário não encontrado.'
+      case 409:
+        return 'Não foi possível cadastrar o funcionário porque já existe um registro com esses dados.'
+      case 500:
+        return 'Ocorreu um erro interno no servidor.'
+      case 502:
+      case 503:
+        return 'O servidor está temporariamente indisponível.'
+      default:
+        return 'Não foi possível cadastrar o funcionário. Tente novamente.'
+    }
+  }
+
+  // =========================================================
+  // ALTERAÇÃO DOS CAMPOS
+  // =========================================================
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
+
+    setFormData((currentData) => ({
+      ...currentData,
+      [name]: value,
+    }))
+  }
+
+  // =========================================================
+  // CANCELAR
+  // =========================================================
+
+  const handleCancel = () => {
+    navigate('/employees')
+  }
+
+  // =========================================================
+  // CADASTRAR FUNCIONÁRIO
+  // =========================================================
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -23,15 +108,15 @@ function EmployeeForm() {
     setIsSubmitting(true)
 
     const employee = {
-      name: name.trim(),
-      employeeCode: employeeCode.trim().toUpperCase(),
-      email: email.trim(),
-      phone: phone.trim(),
-      position: position.trim(),
+      name: formData.name.trim(),
+      employeeCode: formData.employeeCode.trim().toUpperCase(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      position: formData.position.trim(),
     }
 
     try {
-      const response = await fetch('http://localhost:8085/v1/employees', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,43 +124,42 @@ function EmployeeForm() {
         body: JSON.stringify(employee),
       })
 
-      if (!response.ok) {
-        const errorData = await response.text()
-        console.error('Erro da API:', errorData)
+      const responseData = await response.json().catch(() => null)
 
-        throw new Error('Não foi possível cadastrar o funcionário.')
+      if (!response.ok) {
+        console.error('Erro retornado pela API:', responseData)
+        throw new Error(getApiErrorMessage(response.status, responseData))
       }
 
-      alert('Funcionário cadastrado com sucesso!')
+      window.alert('Funcionário cadastrado com sucesso!')
       navigate('/employees')
-    } catch (err) {
-      console.error(err)
-      setError('Não foi possível cadastrar o funcionário. Tente novamente.')
+    } catch (error) {
+      console.error('Erro ao cadastrar funcionário:', error)
+      setError(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  // =========================================================
+  // RENDER
+  // =========================================================
+
   return (
     <div className="page-wrapper">
-      <Navbar />
-
       <main className="form-page">
         <header className="form-header">
           <button
             type="button"
             className="back-link"
-            onClick={() => navigate('/employees')}
+            onClick={handleCancel}
+            disabled={isSubmitting}
           >
             ← Voltar para listagem
           </button>
 
           <h1>Novo Funcionário</h1>
-
-          <p>
-            Preencha os dados abaixo para cadastrar um novo funcionário na
-            equipe.
-          </p>
+          <p>Preencha os dados abaixo para cadastrar um novo funcionário na equipe.</p>
         </header>
 
         <section className="form-card">
@@ -83,99 +167,87 @@ function EmployeeForm() {
             <div className="form-section">
               <div className="section-title">
                 <h2>Dados do Funcionário</h2>
-                <p>
-                  Informações de registro e cargo profissional.
-                </p>
+                <p>Informações de registro e cargo profissional.</p>
               </div>
 
               <div className="form-grid">
-
-                {/* Nome */}
+                {/* NOME */}
                 <div className="form-group">
-                  <label htmlFor="name">
-                    Nome Completo
-                  </label>
-
+                  <label htmlFor="name">Nome Completo</label>
                   <input
                     id="name"
+                    name="name"
                     type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={formData.name}
+                    onChange={handleChange}
                     placeholder="Ex: Leonardo Beaumont"
+                    autoComplete="name"
                     required
                   />
                 </div>
 
-                {/* Código */}
+                {/* CÓDIGO */}
                 <div className="form-group">
-                  <label htmlFor="employeeCode">
-                    Código do Funcionário
-                  </label>
-
+                  <label htmlFor="employeeCode">Código do Funcionário</label>
                   <input
                     id="employeeCode"
+                    name="employeeCode"
                     type="text"
-                    value={employeeCode}
-                    onChange={(e) =>
-                      setEmployeeCode(e.target.value)
-                    }
+                    value={formData.employeeCode}
+                    onChange={handleChange}
                     placeholder="Ex: EMP-001"
                     maxLength={20}
                     required
                   />
                 </div>
 
-                {/* E-mail */}
+                {/* E-MAIL */}
                 <div className="form-group">
-                  <label htmlFor="email">
-                    E-mail Corporativo
-                  </label>
-
+                  <label htmlFor="email">E-mail Corporativo</label>
                   <input
                     id="email"
+                    name="email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="leonardo@fleetgo.com"
+                    autoComplete="email"
                     required
                   />
                 </div>
 
-                {/* Telefone */}
+                {/* TELEFONE */}
                 <div className="form-group">
-                  <label htmlFor="phone">
-                    Telefone
-                  </label>
-
+                  <label htmlFor="phone">Telefone</label>
                   <input
                     id="phone"
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleChange}
                     placeholder="(71) 98888-4321"
+                    autoComplete="tel"
                     required
                   />
                 </div>
 
-                {/* Cargo */}
+                {/* CARGO */}
                 <div className="form-group">
-                  <label htmlFor="position">
-                    Cargo
-                  </label>
-
+                  <label htmlFor="position">Cargo</label>
                   <input
                     id="position"
+                    name="position"
                     type="text"
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
+                    value={formData.position}
+                    onChange={handleChange}
                     placeholder="Ex: Gerente de Operações"
                     required
                   />
                 </div>
-
               </div>
             </div>
 
+            {/* ERRO */}
             {error && (
               <div className="form-error" role="alert">
                 <span className="error-icon">⚠️</span>
@@ -183,11 +255,12 @@ function EmployeeForm() {
               </div>
             )}
 
+            {/* AÇÕES */}
             <div className="form-actions">
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={() => navigate('/employees')}
+                onClick={handleCancel}
                 disabled={isSubmitting}
               >
                 Cancelar
@@ -200,7 +273,7 @@ function EmployeeForm() {
               >
                 {isSubmitting ? (
                   <>
-                    <span className="spinner" />
+                    <span className="spinner" aria-hidden="true" />
                     Cadastrando...
                   </>
                 ) : (

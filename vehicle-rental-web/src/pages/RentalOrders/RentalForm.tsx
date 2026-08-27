@@ -1,22 +1,35 @@
 import type { FormEvent } from 'react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../../components/Navbar'
+
+// REMOVIDO: import Navbar from '../../components/Navbar'
 import '../../styles/FormStyles.css'
 
-interface SelectOption {
+const API_URL = 'http://localhost:8085'
+
+interface Customer {
   id: number
-  name?: string
-  model?: string
-  brand?: string
+  name: string
+}
+
+interface Vehicle {
+  id: number
+  brand: string
+  model: string
+  status?: string
+}
+
+interface Employee {
+  id: number
+  name: string
 }
 
 function RentalForm() {
   const navigate = useNavigate()
 
-  const [customers, setCustomers] = useState<SelectOption[]>([])
-  const [vehicles, setVehicles] = useState<SelectOption[]>([])
-  const [employees, setEmployees] = useState<SelectOption[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
 
   const [customerId, setCustomerId] = useState('')
   const [vehicleId, setVehicleId] = useState('')
@@ -25,74 +38,110 @@ function RentalForm() {
   const [endDate, setEndDate] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('CREDIT_CARD')
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // =========================================================
+  // TRATAMENTO DE ERROS
+  // =========================================================
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof TypeError) {
+      return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
+    }
+
+    if (error instanceof Error) {
+      return error.message
+    }
+
+    return 'Ocorreu um erro inesperado. Tente novamente.'
+  }
+
+  const getApiErrorMessage = (status: number, data: any): string => {
+    if (data?.message) {
+      return data.message
+    }
+
+    if (data?.error) {
+      return data.error
+    }
+
+    switch (status) {
+      case 400:
+        return 'Os dados informados são inválidos.'
+      case 401:
+        return 'Você não está autorizado a realizar esta operação.'
+      case 403:
+        return 'Você não tem permissão para realizar esta operação.'
+      case 404:
+        return 'O recurso solicitado não foi encontrado.'
+      case 409:
+        return 'Não foi possível realizar a operação porque existe um conflito nos dados.'
+      case 500:
+        return 'Ocorreu um erro interno no servidor.'
+      case 502:
+      case 503:
+        return 'O servidor está temporariamente indisponível.'
+      default:
+        return 'Não foi possível realizar a operação. Tente novamente.'
+    }
+  }
 
   // =========================================================
   // CARREGAR CLIENTES, VEÍCULOS E FUNCIONÁRIOS
   // =========================================================
 
   useEffect(() => {
-    Promise.all([
-      fetch('http://localhost:8085/v1/customers')
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Erro ao carregar clientes')
-          }
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        setError('')
 
-          return response.json()
-        }),
+        const [customersResponse, vehiclesResponse, employeesResponse] = await Promise.all([
+          fetch(`${API_URL}/v1/customers`),
+          fetch(`${API_URL}/v1/vehicles`),
+          fetch(`${API_URL}/v1/employees`),
+        ])
 
-      fetch('http://localhost:8085/v1/vehicles')
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Erro ao carregar veículos')
-          }
-
-          return response.json()
-        }),
-
-      fetch('http://localhost:8085/v1/employees')
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Erro ao carregar funcionários')
-          }
-
-          return response.json()
-        }),
-    ])
-      .then(([customersData, vehiclesData, employeesData]) => {
-        const parseData = (data: any) => {
-          if (Array.isArray(data)) {
-            return data
-          }
-
-          return data?.content || []
+        if (!customersResponse.ok) {
+          const data = await customersResponse.json().catch(() => null)
+          throw new Error(`Clientes: ${getApiErrorMessage(customersResponse.status, data)}`)
         }
 
-        setCustomers(parseData(customersData))
-        setVehicles(parseData(vehiclesData))
-        setEmployees(parseData(employeesData))
-      })
-      .catch((err) => {
+        if (!vehiclesResponse.ok) {
+          const data = await vehiclesResponse.json().catch(() => null)
+          throw new Error(`Veículos: ${getApiErrorMessage(vehiclesResponse.status, data)}`)
+        }
+
+        if (!employeesResponse.ok) {
+          const data = await employeesResponse.json().catch(() => null)
+          throw new Error(`Funcionários: ${getApiErrorMessage(employeesResponse.status, data)}`)
+        }
+
+        const customersData = await customersResponse.json()
+        const vehiclesData = await vehiclesResponse.json()
+        const employeesData = await employeesResponse.json()
+
+        setCustomers(Array.isArray(customersData) ? customersData : customersData?.content || [])
+        setVehicles(Array.isArray(vehiclesData) ? vehiclesData : vehiclesData?.content || [])
+        setEmployees(Array.isArray(employeesData) ? employeesData : employeesData?.content || [])
+      } catch (err) {
         console.error('Erro ao carregar dados:', err)
-        setError(
-          'Não foi possível carregar os clientes, veículos e funcionários.'
-        )
-      })
-      .finally(() => {
+        setError(getErrorMessage(err))
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+
+    loadData()
   }, [])
 
   // =========================================================
   // CADASTRAR LOCAÇÃO
   // =========================================================
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     setError('')
@@ -107,46 +156,26 @@ function RentalForm() {
       employeeId: Number(employeeId),
     }
 
-    console.log('Enviando locação:', payload)
-
     try {
-      const response = await fetch(
-        'http://localhost:8085/v1/rental-orders',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        }
-      )
+      const response = await fetch(`${API_URL}/v1/rental-orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
 
-      const responseData = await response
-        .json()
-        .catch(() => null)
-
-      console.log('Resposta da API:', responseData)
+      const responseData = await response.json().catch(() => null)
 
       if (!response.ok) {
-        throw new Error(
-          responseData?.message ||
-            'Não foi possível cadastrar a locação.'
-        )
+        throw new Error(getApiErrorMessage(response.status, responseData))
       }
 
       alert('Locação cadastrada com sucesso!')
-
       navigate('/rentals')
     } catch (err) {
       console.error('Erro ao cadastrar locação:', err)
-
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError(
-          'Não foi possível cadastrar a locação. Verifique os dados e tente novamente.'
-        )
-      }
+      setError(getErrorMessage(err))
     } finally {
       setIsSubmitting(false)
     }
@@ -158,264 +187,140 @@ function RentalForm() {
 
   return (
     <div className="page-wrapper">
-      <Navbar />
-
       <main className="form-page">
-
-        {/* CABEÇALHO */}
         <header className="form-header">
-
           <button
             type="button"
             className="back-link"
             onClick={() => navigate('/rentals')}
+            disabled={isSubmitting}
           >
             ← Voltar para listagem
           </button>
 
           <h1>Nova Locação</h1>
-
-          <p>
-            Preencha os dados abaixo para registrar um novo
-            contrato de aluguel.
-          </p>
-
+          <p>Preencha os dados abaixo para registrar um novo contrato de aluguel.</p>
         </header>
 
-        {/* FORMULÁRIO */}
         <section className="form-card">
-
           {loading ? (
-
-            <p
-              className="loading-text"
-              style={{
-                color: '#9ca3af',
-                textAlign: 'center',
-              }}
-            >
-              Carregando dados do formulário...
-            </p>
-
+            <div className="form-loading">Carregando dados do formulário...</div>
           ) : (
-
             <form onSubmit={handleSubmit}>
-
               <div className="form-section">
-
                 <div className="section-title">
-
                   <h2>Detalhes do Contrato</h2>
-
-                  <p>
-                    Associação de cliente, veículo,
-                    funcionário e forma de pagamento.
-                  </p>
-
+                  <p>Associação de cliente, veículo, funcionário e forma de pagamento.</p>
                 </div>
 
                 <div className="form-grid">
-
                   {/* CLIENTE */}
                   <div className="form-group">
-
-                    <label htmlFor="customer">
-                      Cliente
-                    </label>
-
+                    <label htmlFor="customer">Cliente</label>
                     <select
                       id="customer"
-                      required
                       value={customerId}
-                      onChange={(event) =>
-                        setCustomerId(event.target.value)
-                      }
+                      onChange={(event) => setCustomerId(event.target.value)}
+                      required
                     >
-
-                      <option value="">
-                        Selecione um cliente...
-                      </option>
-
+                      <option value="">Selecione um cliente...</option>
                       {customers.map((customer) => (
-                        <option
-                          key={customer.id}
-                          value={customer.id}
-                        >
-                          {customer.name ||
-                            `Cliente #${customer.id}`}
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name}
                         </option>
                       ))}
-
                     </select>
-
                   </div>
 
                   {/* VEÍCULO */}
                   <div className="form-group">
-
-                    <label htmlFor="vehicle">
-                      Veículo
-                    </label>
-
+                    <label htmlFor="vehicle">Veículo</label>
                     <select
                       id="vehicle"
-                      required
                       value={vehicleId}
-                      onChange={(event) =>
-                        setVehicleId(event.target.value)
-                      }
+                      onChange={(event) => setVehicleId(event.target.value)}
+                      required
                     >
-
-                      <option value="">
-                        Selecione um veículo...
-                      </option>
-
+                      <option value="">Selecione um veículo...</option>
                       {vehicles.map((vehicle) => (
-                        <option
-                          key={vehicle.id}
-                          value={vehicle.id}
-                        >
-                          {vehicle.brand && vehicle.model
-                            ? `${vehicle.brand} ${vehicle.model}`
-                            : vehicle.model ||
-                              `Veículo #${vehicle.id}`}
+                        <option key={vehicle.id} value={vehicle.id}>
+                          {vehicle.brand} {vehicle.model}
                         </option>
                       ))}
-
                     </select>
-
                   </div>
 
                   {/* FUNCIONÁRIO */}
                   <div className="form-group">
-
-                    <label htmlFor="employee">
-                      Funcionário Responsável
-                    </label>
-
+                    <label htmlFor="employee">Funcionário Responsável</label>
                     <select
                       id="employee"
-                      required
                       value={employeeId}
-                      onChange={(event) =>
-                        setEmployeeId(event.target.value)
-                      }
+                      onChange={(event) => setEmployeeId(event.target.value)}
+                      required
                     >
-
-                      <option value="">
-                        Selecione um funcionário...
-                      </option>
-
+                      <option value="">Selecione um funcionário...</option>
                       {employees.map((employee) => (
-                        <option
-                          key={employee.id}
-                          value={employee.id}
-                        >
-                          {employee.name ||
-                            `Funcionário #${employee.id}`}
+                        <option key={employee.id} value={employee.id}>
+                          {employee.name}
                         </option>
                       ))}
-
                     </select>
-
                   </div>
 
                   {/* PAGAMENTO */}
                   <div className="form-group">
-
-                    <label htmlFor="paymentMethod">
-                      Forma de Pagamento
-                    </label>
-
+                    <label htmlFor="paymentMethod">Forma de Pagamento</label>
                     <select
                       id="paymentMethod"
-                      required
                       value={paymentMethod}
-                      onChange={(event) =>
-                        setPaymentMethod(event.target.value)
-                      }
+                      onChange={(event) => setPaymentMethod(event.target.value)}
+                      required
                     >
-
-                      <option value="CREDIT_CARD">
-                        Cartão de Crédito
-                      </option>
-
-                      <option value="DEBIT_CARD">
-                        Cartão de Débito
-                      </option>
-
-                      <option value="PIX">
-                        PIX
-                      </option>
-
-                      <option value="CASH">
-                        Dinheiro
-                      </option>
-
+                      <option value="CREDIT_CARD">Cartão de Crédito</option>
+                      <option value="DEBIT_CARD">Cartão de Débito</option>
+                      <option value="PIX">PIX</option>
+                      <option value="CASH">Dinheiro</option>
                     </select>
-
                   </div>
 
                   {/* DATA DE RETIRADA */}
                   <div className="form-group">
-
-                    <label htmlFor="startDate">
-                      Data de Retirada
-                    </label>
-
+                    <label htmlFor="startDate">Data de Retirada</label>
                     <input
                       id="startDate"
                       type="date"
-                      required
                       value={startDate}
-                      onChange={(event) =>
-                        setStartDate(event.target.value)
-                      }
+                      onChange={(event) => setStartDate(event.target.value)}
+                      required
                     />
-
                   </div>
 
                   {/* DATA DE DEVOLUÇÃO */}
                   <div className="form-group">
-
-                    <label htmlFor="endDate">
-                      Data de Devolução
-                    </label>
-
+                    <label htmlFor="endDate">Data de Devolução</label>
                     <input
                       id="endDate"
                       type="date"
-                      required
                       value={endDate}
                       min={startDate || undefined}
-                      onChange={(event) =>
-                        setEndDate(event.target.value)
-                      }
+                      onChange={(event) => setEndDate(event.target.value)}
+                      required
                     />
-
                   </div>
-
                 </div>
-
               </div>
 
               {/* ERRO */}
               {error && (
-                <div
-                  className="form-error"
-                  role="alert"
-                >
-                  <span className="error-icon">
-                    ⚠️
-                  </span>
-
+                <div className="form-error" role="alert">
+                  <span className="error-icon">⚠️</span>
                   <span>{error}</span>
                 </div>
               )}
 
-              {/* BOTÕES */}
+              {/* AÇÕES */}
               <div className="form-actions">
-
                 <button
                   type="button"
                   className="btn-secondary"
@@ -430,7 +335,6 @@ function RentalForm() {
                   className="btn-primary"
                   disabled={isSubmitting}
                 >
-
                   {isSubmitting ? (
                     <>
                       <span className="spinner" />
@@ -439,17 +343,11 @@ function RentalForm() {
                   ) : (
                     'Salvar Locação'
                   )}
-
                 </button>
-
               </div>
-
             </form>
-
           )}
-
         </section>
-
       </main>
     </div>
   )

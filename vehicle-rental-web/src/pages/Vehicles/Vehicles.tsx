@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Navbar from '../../components/Navbar'
+
+// REMOVIDO: import Navbar from '../../components/Navbar'
+import { Modal } from '../../components/Modal'
 import './Vehicles.css'
+
+// =========================================================
+// TIPOS E INTERFACES
+// =========================================================
 
 interface Vehicle {
   id: number
@@ -11,163 +17,357 @@ interface Vehicle {
   year: number
   mileage: number
   dailyRate: number
-  status: string
+  status: VehicleStatus
 }
 
+type VehicleStatus =
+  | 'AVAILABLE'
+  | 'RENTED'
+  | 'MAINTENANCE'
+  | 'UNAVAILABLE'
+  | string
+
+// =========================================================
+// COMPONENTE PRINCIPAL
+// =========================================================
+
 function Vehicles() {
+  // =========================================================
+  // STATES
+  // =========================================================
+
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [vehicleToDelete, setVehicleToDelete] = useState<number | null>(null)
+  const [vehicleNameToDelete, setVehicleNameToDelete] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // =========================================================
+  // TRATAMENTO DE ERROS
+  // =========================================================
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof TypeError) {
+      return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
+    }
+
+    if (error instanceof Error) {
+      return error.message
+    }
+
+    return 'Ocorreu um erro inesperado. Tente novamente.'
+  }
+
+  const getApiErrorMessage = (status: number, data: any): string => {
+    if (data?.message) {
+      return data.message
+    }
+
+    if (data?.error) {
+      return data.error
+    }
+
+    switch (status) {
+      case 400:
+        return 'Os dados informados são inválidos.'
+      case 401:
+        return 'Você não está autorizado a realizar esta operação.'
+      case 403:
+        return 'Você não tem permissão para realizar esta operação.'
+      case 404:
+        return 'O recurso solicitado não foi encontrado.'
+      case 409:
+        return 'Não foi possível realizar a operação porque existe um conflito nos dados.'
+      case 500:
+        return 'Ocorreu um erro interno no servidor.'
+      case 502:
+      case 503:
+        return 'O servidor está temporariamente indisponível.'
+      default:
+        return 'Não foi possível realizar a operação. Tente novamente.'
+    }
+  }
+
+  // =========================================================
+  // FUNÇÕES AUXILIARES
+  // =========================================================
+
+  const getStatusLabel = (status: VehicleStatus) => {
+    switch (status.toUpperCase()) {
+      case 'AVAILABLE':
+      case 'DISPONIVEL':
+        return 'Disponível'
+      case 'RENTED':
+      case 'ALUGADO':
+        return 'Alugado'
+      case 'MAINTENANCE':
+      case 'MANUTENCAO':
+        return 'Manutenção'
+      case 'UNAVAILABLE':
+      case 'INDISPONIVEL':
+        return 'Indisponível'
+      default:
+        return status
+    }
+  }
+
+  const getStatusClass = (status: VehicleStatus) => {
+    switch (status.toUpperCase()) {
+      case 'AVAILABLE':
+      case 'DISPONIVEL':
+        return 'available'
+      case 'RENTED':
+      case 'ALUGADO':
+        return 'rented'
+      case 'MAINTENANCE':
+      case 'MANUTENCAO':
+        return 'maintenance'
+      case 'UNAVAILABLE':
+      case 'INDISPONIVEL':
+        return 'unavailable'
+      default:
+        return 'unknown'
+    }
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value)
+  }
+
+  // =========================================================
+  // REQUISIÇÕES
+  // =========================================================
+
+  const loadVehicles = async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      const response = await fetch('http://localhost:8085/v1/vehicles')
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(getApiErrorMessage(response.status, data))
+      }
+
+      const data = await response.json()
+      setVehicles(Array.isArray(data) ? data : data.content || [])
+    } catch (err) {
+      console.error('Erro ao buscar veículos:', err)
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    fetch('http://localhost:8085/v1/vehicles')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Erro ao buscar veículos')
-        }
-        return response.json()
-      })
-      .then((data) => {
-        setVehicles(data.content || [])
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    loadVehicles()
   }, [])
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm(
-      'Tem certeza que deseja excluir este veículo?'
-    )
+  // =========================================================
+  // HANDLERS
+  // =========================================================
 
-    if (!confirmed) {
-      return
-    }
+  const handleDeleteClick = (id: number, name: string) => {
+    setVehicleToDelete(id)
+    setVehicleNameToDelete(name)
+    setShowDeleteModal(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!vehicleToDelete) return
+
+    setIsDeleting(true)
+    setError('')
 
     try {
       const response = await fetch(
-        `http://localhost:8085/v1/vehicles/${id}`,
+        `http://localhost:8085/v1/vehicles/${vehicleToDelete}`,
         {
           method: 'DELETE',
         }
       )
 
       if (!response.ok) {
-        throw new Error('Erro ao excluir veículo')
+        const data = await response.json().catch(() => null)
+
+        if (response.status === 409) {
+          throw new Error(
+            'Este veículo não pode ser excluído pois possui locações ativas.'
+          )
+        }
+
+        throw new Error(getApiErrorMessage(response.status, data))
       }
 
       setVehicles((currentVehicles) =>
-        currentVehicles.filter((vehicle) => vehicle.id !== id)
+        currentVehicles.filter((vehicle) => vehicle.id !== vehicleToDelete)
       )
-    } catch (error) {
-      console.error(error)
-      alert('Não foi possível excluir o veículo.')
+
+      setShowDeleteModal(false)
+      setVehicleToDelete(null)
+      setVehicleNameToDelete('')
+    } catch (err) {
+      console.error('Erro ao excluir veículo:', err)
+      setError(getErrorMessage(err))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
-  const renderStatusBadge = (status: string) => {
-    const statusNormalized = status?.toUpperCase() || ''
-
-    if (statusNormalized === 'DISPONIVEL' || statusNormalized === 'AVAILABLE') {
-      return <span className="badge badge-success">Disponível</span>
+  const handleCloseModal = () => {
+    if (!isDeleting) {
+      setShowDeleteModal(false)
+      setVehicleToDelete(null)
+      setVehicleNameToDelete('')
     }
-    if (statusNormalized === 'ALUGADO' || statusNormalized === 'RENTED') {
-      return <span className="badge badge-warning">Alugado</span>
-    }
-    if (statusNormalized === 'MANUTENCAO' || statusNormalized === 'MAINTENANCE') {
-      return <span className="badge badge-danger">Manutenção</span>
-    }
-
-    return <span className="badge badge-neutral">{status}</span>
   }
+
+  // =========================================================
+  // RENDER PRINCIPAL
+  // =========================================================
 
   return (
     <div className="page-wrapper">
-      <Navbar />
-
       <main className="vehicles-page">
         <header className="vehicles-header">
           <div>
-            <h1>Frota de Veículos</h1>
-            <p>Gerencie a frota disponível para locação no sistema.</p>
+            <span className="page-label">FLEETGO</span>
+            <h1>Veículos</h1>
+            <p>Gerencie os veículos disponíveis para locação.</p>
           </div>
 
           <Link to="/vehicles/new" className="new-vehicle-button">
-            + Novo Veículo
+            <span>+</span>
+            Novo veículo
           </Link>
         </header>
 
-        {loading ? (
-          <div className="loading-state">
-            <div className="spinner" />
-            <p>Carregando catálogo de veículos...</p>
+        <section className="vehicles-card">
+          <div className="vehicles-card-header">
+            <div>
+              <h2>Veículos cadastrados</h2>
+              <p>Visualize e gerencie os veículos da frota.</p>
+            </div>
+            <span className="vehicle-count">
+              {vehicles.length} {vehicles.length === 1 ? 'veículo' : 'veículos'}
+            </span>
           </div>
-        ) : vehicles.length === 0 ? (
-          <div className="empty-state">
-            <p>Nenhum veículo encontrado na frota.</p>
-            <Link to="/vehicles/new" className="button-link">
-              Cadastrar o primeiro veículo
-            </Link>
-          </div>
-        ) : (
-          <div className="table-container">
-            <table className="vehicles-table">
-              <thead>
-                <tr>
-                  <th>Marca / Modelo</th>
-                  <th>Placa</th>
-                  <th>Ano</th>
-                  <th>Diária</th>
-                  <th>Status</th>
-                  <th className="actions-header">Ações</th>
-                </tr>
-              </thead>
 
-              <tbody>
-                {vehicles.map((vehicle) => (
-                  <tr key={vehicle.id}>
-                    <td>
-                      <div className="vehicle-info">
-                        <span className="vehicle-model">{vehicle.model}</span>
-                        <span className="vehicle-brand">{vehicle.brand}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="plate-badge">{vehicle.licensePlate}</span>
-                    </td>
-                    <td>{vehicle.year}</td>
-                    <td className="daily-rate">
-                      R$ {vehicle.dailyRate.toFixed(2)}
-                    </td>
-                    <td>{renderStatusBadge(vehicle.status)}</td>
-
-                    <td>
-                      <div className="table-actions">
-                        <Link
-                          to={`/vehicles/${vehicle.id}/edit`}
-                          className="action-btn edit-btn"
-                        >
-                          Editar
-                        </Link>
-
-                        <button
-                          type="button"
-                          className="action-btn delete-btn"
-                          onClick={() => handleDelete(vehicle.id)}
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
+          <div className="table-wrapper">
+            {loading ? (
+              <div className="loading-state">
+                <div className="loading-spinner" />
+                <span>Carregando veículos...</span>
+              </div>
+            ) : error ? (
+              <div className="error-state">
+                <p>{error}</p>
+                <button type="button" onClick={loadVehicles} className="retry-button">
+                  Tentar novamente
+                </button>
+              </div>
+            ) : vehicles.length === 0 ? (
+              <div className="empty-state">
+                <p>Nenhum veículo cadastrado.</p>
+                <Link to="/vehicles/new" className="empty-state-link">
+                  Cadastrar primeiro veículo
+                </Link>
+              </div>
+            ) : (
+              <table className="vehicles-table">
+                <thead>
+                  <tr>
+                    <th>Veículo</th>
+                    <th>Placa</th>
+                    <th>Ano</th>
+                    <th>Diária</th>
+                    <th>Status</th>
+                    <th className="actions-column">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {vehicles.map((vehicle) => (
+                    <tr key={vehicle.id}>
+                      <td>
+                        <div className="vehicle-info">
+                          <div className="vehicle-avatar">
+                            {vehicle.brand.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <strong>{vehicle.model}</strong>
+                            <span>{vehicle.brand}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="vehicle-plate">{vehicle.licensePlate}</span>
+                      </td>
+                      <td>{vehicle.year}</td>
+                      <td>
+                        <span className="daily-rate">{formatCurrency(vehicle.dailyRate)}</span>
+                      </td>
+                      <td>
+                        <span className={`status ${getStatusClass(vehicle.status)}`}>
+                          {getStatusLabel(vehicle.status)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="table-actions">
+                          <Link to={`/vehicles/${vehicle.id}/edit`} className="action-button">
+                            Editar
+                          </Link>
+                          <button
+                            type="button"
+                            className="action-button danger"
+                            onClick={() => handleDeleteClick(vehicle.id, `${vehicle.brand} ${vehicle.model}`)}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-        )}
+        </section>
       </main>
+
+      <Modal
+        isOpen={showDeleteModal}
+        title="Excluir Veículo"
+        icon="🚗"
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        isDanger={true}
+        isLoading={isDeleting}
+        size="sm"
+      >
+        <p>
+          Tem certeza que deseja excluir o veículo{' '}
+          <strong style={{ color: '#f9fafb' }}>{vehicleNameToDelete}</strong>?
+        </p>
+        <p style={{ 
+          color: '#f87171', 
+          fontSize: '14px',
+          marginTop: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          <span>⚠️</span> Esta ação não pode ser desfeita.
+        </p>
+      </Modal>
     </div>
   )
 }

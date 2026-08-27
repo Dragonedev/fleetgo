@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <defs>
+    <!-- Subtle Forward Motion Gradient for the Accent Dot -->
+    <linearGradient id="electric-flow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0043DB" />
+      <stop offset="100%" stop-color="#1A6DFF" />
+    </linearGradient>
+
+    <style>
+      .navy-fill { fill: #00183D; }
+      .electric-fill { fill: url(#electric-flow); }
+    </style>
+  </defs>
+
+  <!-- Transparent Background -->
+  <rect width="100%" height="100%" fill="none" />
+
+  <!-- Center Group: FleetGo Wordmark -->
+  <g transform="translate(112, 60)">
+    
+    <!-- F -->
+    <!-- Distinctive Feature: Aerodynamic top bar with an integrated 18° forward-slanted terminal -->
+    <path class="navy-fill" d="
+      M 0,0 
+      L 58,0 
+      L 51,16 
+      L 18,16 
+      L 18,48 
+      L 48,48 
+      L 48,64 
+      L 18,64 
+      L 18,120 
+      L 0,120 
+      Z" 
+    />
+
+    <!-- l -->
+    <path class="navy-fill" d="
+      M 74,0 
+      L 92,0 
+      L 92,120 
+      L 74,120 
+      Z" 
+    />
+
+    <!-- e (1st) -->
+    <path class="navy-fill" d="
+      M 141,34 
+      C 114,34 98,53 98,78 
+      C 98,103 114,122 141,122 
+      C 158,122 170,114 178,102 
+      L 164,92 
+      C 158,101 150,106 141,106 
+      C 126,106 117,95 116,83 
+      L 182,83 
+      C 182,80 182,75 182,71 
+      C 182,49 167,34 141,34 
+      Z 
+      M 116,69 
+      C 118,58 126,49 141,49 
+      C 154,49 163,58 165,69 
+      Z" 
+    />
+
+    <!-- e (2nd) -->
+    <path class="navy-fill" d="
+      M 235,34 
+      C 208,34 192,53 192,78 
+      C 192,103 208,122 235,122 
+      C 252,122 264,114 272,102 
+      L 258,92 
+      C 252,101 244,106 235,106 
+      C 220,106 211,95 210,83 
+      L 276,83 
+      C 276,80 276,75 276,71 
+      C 276,49 261,34 235,34 
+      Z 
+      M 210,69 
+      C 212,58 220,49 235,49 
+      C 248,49 257,58 259,69 
+      Z" 
+    />
+
+    <!-- t -->
+    <path class="navy-fill" d="
+      M 300,12 
+      L 300,36 
+      L 284,36 
+      L 284,52 
+      L 300,52 
+      L 300,96 
+      C 300,104 304,107 312,107 
+      C 317,107 322,105 326,103 
+      L 326,119 
+      C 319,121 311,122 304,122 
+      C 287,122 282,112 282,94 
+      L 282,52 
+      L 270,52 
+      L 270,36 
+      L 282,36 
+      L 282,12 
+      Z" 
+    />
+
+    <!-- G -->
+    <!-- Distinctive Feature: Tech-forward open aperture with high-precision horizontal crossbar -->
+    <path class="navy-fill" d="
+      M 404,0 
+      C 365,0 336,27 336,61 
+      C 336,95 365,122 404,122 
+      C 439,122 464,98 467,64 
+      L 412,64 
+      L 412,80 
+      L 448,80 
+      C 444,97 428,106 404,106 
+      C 377,106 355,87 355,61 
+      C 355,35 377,16 404,16 
+      C 426,16 442,27 448,44 
+      L 465,37 
+      C 456,15 434,0 404,0 
+      Z" 
+    />
+
+    <!-- o -->
+    <path class="navy-fill" d="
+      M 517,34 
+      C 490,34 472,53 472,78 
+      C 472,103 490,122 517,122 
+      C 544,122 562,103 562,78 
+      C 562,53 544,34 517,34 
+      Z 
+      M 517,50 
+      C 533,50 544,62 544,78 
+      C 544,94 533,106 517,106 
+      C 501,106 490,94 490,78 
+      C 490,62 501,50 517,50 
+      Z" 
+    />
+
+    <!-- Modern Tech Accent Element -->
+    <!-- Precision Electric Blue Forward Dot / Data Node -->
+    <circle class="electric-fill" cx="576" cy="113" r="8.5" />
+
+  </g>
+</svg>

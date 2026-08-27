@@ -1,94 +1,320 @@
 import type { FormEvent } from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import Navbar from '../../components/Navbar'
+
+// REMOVIDO: import Navbar from '../../components/Navbar'
 import '../../styles/FormStyles.css'
 
+interface Employee {
+  id: number
+  name: string
+  employeeCode?: string
+  email?: string
+  phone?: string
+  position?: string
+}
+
+interface EmployeeFormData {
+  name: string
+  employeeCode: string
+  email: string
+  phone: string
+  position: string
+}
+
 function EmployeeEdit() {
-  const { id } = useParams()
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [name, setName] = useState('')
-  const [cpf, setCpf] = useState('')
-  const [role, setRole] = useState('')
+  const [formData, setFormData] = useState<EmployeeFormData>({
+    name: '',
+    employeeCode: '',
+    email: '',
+    phone: '',
+    position: '',
+  })
+
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  // =========================================================
+  // TRATAMENTO DE ERROS
+  // =========================================================
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof TypeError) {
+      return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
+    }
+
+    if (error instanceof Error) {
+      return error.message
+    }
+
+    return 'Ocorreu um erro inesperado. Tente novamente.'
+  }
+
+  const getApiErrorMessage = (status: number, data: any): string => {
+    if (data?.message) {
+      return data.message
+    }
+
+    if (data?.error) {
+      return data.error
+    }
+
+    switch (status) {
+      case 400:
+        return 'Os dados informados são inválidos.'
+      case 401:
+        return 'Você não está autorizado a realizar esta operação.'
+      case 403:
+        return 'Você não tem permissão para realizar esta operação.'
+      case 404:
+        return 'Funcionário não encontrado.'
+      case 409:
+        return 'Não foi possível realizar a operação porque existe um conflito nos dados.'
+      case 500:
+        return 'Ocorreu um erro interno no servidor.'
+      case 502:
+      case 503:
+        return 'O servidor está temporariamente indisponível.'
+      default:
+        return 'Não foi possível realizar a operação. Tente novamente.'
+    }
+  }
+
+  // =========================================================
+  // REQUISIÇÕES
+  // =========================================================
 
   useEffect(() => {
-    fetch(`http://localhost:8085/v1/employees/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setName(data.name || '')
-        setCpf(data.cpf || '')
-        setRole(data.role || '')
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false))
+    const fetchEmployee = async () => {
+      try {
+        setLoading(true)
+        setError('')
+
+        const response = await fetch(`http://localhost:8085/v1/employees/${id}`)
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => null)
+          throw new Error(getApiErrorMessage(response.status, data))
+        }
+
+        const data: Employee = await response.json()
+
+        setFormData({
+          name: data.name || '',
+          employeeCode: data.employeeCode || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          position: data.position || '',
+        })
+      } catch (err) {
+        console.error('Erro ao buscar funcionário:', err)
+        setError(getErrorMessage(err))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (id) {
+      fetchEmployee()
+    }
   }, [id])
 
-  const handleSubmit = async (event: FormEvent) => {
+  // =========================================================
+  // HANDLERS
+  // =========================================================
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setSubmitting(true)
+
+    setError('')
+    setIsSubmitting(true)
+
+    const employee = {
+      name: formData.name.trim(),
+      employeeCode: formData.employeeCode.trim().toUpperCase(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      position: formData.position.trim(),
+    }
 
     try {
       const response = await fetch(`http://localhost:8085/v1/employees/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, cpf, role }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(employee),
       })
 
-      if (!response.ok) throw new Error('Erro ao atualizar funcionário')
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(getApiErrorMessage(response.status, data))
+      }
 
       alert('Funcionário atualizado com sucesso!')
       navigate('/employees')
-    } catch (error) {
-      console.error(error)
-      alert('Não foi possível atualizar o funcionário.')
+    } catch (err) {
+      console.error('Erro ao atualizar funcionário:', err)
+      setError(getErrorMessage(err))
     } finally {
-      setSubmitting(false)
+      setIsSubmitting(false)
     }
+  }
+
+  const handleCancel = () => {
+    navigate('/employees')
+  }
+
+  // =========================================================
+  // RENDER
+  // =========================================================
+
+  if (loading) {
+    return (
+      <div className="page-wrapper">
+        <main className="form-page">
+          <div className="form-loading">Carregando funcionário...</div>
+        </main>
+      </div>
+    )
   }
 
   return (
     <div className="page-wrapper">
-      <Navbar />
       <main className="form-page">
         <header className="form-header">
+          <button
+            type="button"
+            className="back-link"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            ← Voltar para listagem
+          </button>
+
           <h1>Editar Funcionário</h1>
-          <p>Atualize as informações do funcionário.</p>
+          <p>Atualize as informações do funcionário cadastrado.</p>
         </header>
 
-        {loading ? (
-          <p>Carregando...</p>
-        ) : (
-          <form className="custom-form" onSubmit={handleSubmit}>
-            <div className="form-grid">
-              <div className="form-group full-width">
-                <label htmlFor="name">Nome Completo</label>
-                <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        <section className="form-card">
+          <form onSubmit={handleSubmit}>
+            <div className="form-section">
+              <div className="section-title">
+                <h2>Dados do Funcionário</h2>
+                <p>Atualize as informações de registro e cargo profissional.</p>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="cpf">CPF</label>
-                <input id="cpf" type="text" value={cpf} onChange={(e) => setCpf(e.target.value)} required />
-              </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="name">Nome Completo</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="role">Cargo</label>
-                <input id="role" type="text" value={role} onChange={(e) => setRole(e.target.value)} required />
+                <div className="form-group">
+                  <label htmlFor="employeeCode">Código do Funcionário</label>
+                  <input
+                    id="employeeCode"
+                    name="employeeCode"
+                    type="text"
+                    value={formData.employeeCode}
+                    onChange={handleChange}
+                    maxLength={20}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">E-mail Corporativo</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="phone">Telefone</label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="text"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="position">Cargo</label>
+                  <input
+                    id="position"
+                    name="position"
+                    type="text"
+                    value={formData.position}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
+            {error && (
+              <div className="form-error" role="alert">
+                <span className="error-icon">⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
             <div className="form-actions">
-              <button type="button" className="btn-secondary" onClick={() => navigate('/employees')} disabled={submitting}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
                 Cancelar
               </button>
-              <button type="submit" className="btn-primary" disabled={submitting}>
-                {submitting ? 'Salvando...' : 'Salvar Alterações'}
+
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner" />
+                    Salvando...
+                  </>
+                ) : (
+                  'Salvar Alterações'
+                )}
               </button>
             </div>
           </form>
-        )}
+        </section>
       </main>
     </div>
   )

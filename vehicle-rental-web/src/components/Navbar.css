@@ -1,16 +1,18 @@
-/* No seu index.css ou App.css principal */
+/* =========================================================
+   NAVBAR - CSS UNIFICADO
+========================================================= */
+
+/* Reserva o espaço da barra de rolagem mesmo em páginas curtas */
 html {
-  /* Reserva o espaço da barra de rolagem mesmo em páginas curtas */
   scrollbar-gutter: stable;
-  
-  /* Fallback para navegadores legados que não suportam scrollbar-gutter */
-  overflow-y: scroll; 
+  overflow-y: scroll;
 }
+
 .navbar-wrapper {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #00183d; /* Deep Navy corporativo */
+  background-color: #0b1329;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
@@ -22,9 +24,43 @@ html {
   justify-content: space-between;
   align-items: center;
   padding: 14px 40px;
+  height: 64px;
 }
 
-/* Logo */
+/* =========================================================
+   LADO ESQUERDO - Menu + Logo
+========================================================= */
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* BOTÃO DO MENU (☰) */
+.menu-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  will-change: background-color, border-color, color;
+  padding: 0;
+  font-size: 24px;
+}
+
+.menu-button:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* LOGO */
 .navbar-logo {
   display: flex;
   align-items: center;
@@ -36,7 +72,19 @@ html {
   opacity: 0.9;
 }
 
-/* Links de Navegação */
+/* LOGO SVG - BRANCA (usando <img>) */
+.navbar-brand-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+  /* FILTRO PARA DEIXAR A LOGO BRANCA */
+  filter: brightness(0) invert(1);
+}
+
+/* =========================================================
+   LINKS DE NAVEGAÇÃO
+========================================================= */
+
 .navbar-links {
   display: flex;
   align-items: center;
@@ -44,7 +92,7 @@ html {
 }
 
 .navbar-links a {
-  box-sizing: border-box; /* Força o navegador a travar as dimensões exatas */
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -59,11 +107,9 @@ html {
   padding: 8px 16px;
   border-radius: 6px;
   
-  /* Borda transparente pré-alocada de 1px */
-  border: 1px solid transparent; 
+  border: 1px solid transparent;
   background-color: transparent;
 
-  /* Promove a renderização para GPU e evita recalculamento de layout */
   will-change: background-color, border-color, color;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
@@ -77,15 +123,19 @@ html {
 /* Item Ativo (Página Atual) */
 .navbar-links a.active {
   color: #ffffff;
-  font-weight: 500; /* Estritamente idêntico ao estado normal */
+  font-weight: 500;
   background-color: rgba(0, 81, 255, 0.2);
   border-color: rgba(0, 81, 255, 0.4);
 }
 
-/* Responsividade */
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
 @media (max-width: 768px) {
   .navbar {
     padding: 12px 20px;
+    height: 56px;
   }
 
   .navbar-links {
@@ -93,7 +143,60 @@ html {
   }
 
   .navbar-links a {
-    padding: 6px 10px;
+    padding: 6px 12px;
     font-size: 13px;
+  }
+
+  .navbar-brand-logo {
+    height: 24px;
+  }
+
+  .menu-button {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar-links a {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .navbar-links a:nth-child(2),
+  .navbar-links a:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 12px;
+    height: 52px;
+  }
+
+  .navbar-links {
+    gap: 2px;
+  }
+
+  .navbar-links a {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .navbar-links a:nth-child(3),
+  .navbar-links a:nth-child(4) {
+    display: none;
+  }
+
+  .navbar-brand-logo {
+    height: 20px;
+  }
+
+  .menu-button {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
   }
 }

@@ -2,8 +2,10 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import Navbar from '../../components/Navbar'
-import '../../styles/FormStyles.css' 
+// REMOVIDO: import Navbar from '../../components/Navbar'
+import '../../styles/FormStyles.css'
+
+const API_URL = 'http://localhost:8085/v1/vehicles'
 
 function VehicleForm() {
   const navigate = useNavigate()
@@ -11,12 +13,62 @@ function VehicleForm() {
   const [brand, setBrand] = useState('')
   const [model, setModel] = useState('')
   const [licensePlate, setLicensePlate] = useState('')
-  const [year, setYear] = useState('')
+  const [manufactureYear, setManufactureYear] = useState('')
   const [mileage, setMileage] = useState('')
   const [dailyRate, setDailyRate] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  // =========================================================
+  // TRATAMENTO DE ERROS
+  // =========================================================
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof TypeError) {
+      return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
+    }
+
+    if (error instanceof Error) {
+      return error.message
+    }
+
+    return 'Ocorreu um erro inesperado. Tente novamente.'
+  }
+
+  const getApiErrorMessage = (status: number, data: any): string => {
+    if (data?.message) {
+      return data.message
+    }
+
+    if (data?.error) {
+      return data.error
+    }
+
+    switch (status) {
+      case 400:
+        return 'Os dados informados são inválidos.'
+      case 401:
+        return 'Você não está autorizado a realizar esta operação.'
+      case 403:
+        return 'Você não tem permissão para realizar esta operação.'
+      case 404:
+        return 'Veículo não encontrado.'
+      case 409:
+        return 'Não foi possível cadastrar o veículo porque já existe um veículo com esses dados.'
+      case 500:
+        return 'Ocorreu um erro interno no servidor.'
+      case 502:
+      case 503:
+        return 'O servidor está temporariamente indisponível.'
+      default:
+        return 'Não foi possível cadastrar o veículo. Tente novamente.'
+    }
+  }
+
+  // =========================================================
+  // HANDLERS
+  // =========================================================
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -24,61 +76,67 @@ function VehicleForm() {
     setError('')
     setIsSubmitting(true)
 
-    const vehicle = {
+    const payload = {
       brand: brand.trim(),
       model: model.trim(),
       licensePlate: licensePlate.trim().toUpperCase(),
-      year: Number(year),
+      year: Number(manufactureYear),
       mileage: Number(mileage),
       dailyRate: Number(dailyRate),
     }
 
     try {
-      const response = await fetch('http://localhost:8085/v1/vehicles', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(vehicle),
+        body: JSON.stringify(payload),
       })
 
+      const responseData = await response.json().catch(() => null)
+
       if (!response.ok) {
-        throw new Error('Não foi possível cadastrar o veículo.')
+        throw new Error(getApiErrorMessage(response.status, responseData))
       }
 
-      alert('Veículo cadastrado com sucesso!')
+      window.alert('Veículo cadastrado com sucesso!')
       navigate('/vehicles')
     } catch (err) {
-      console.error(err)
-      setError('Não foi possível cadastrar o veículo. Tente novamente.')
+      console.error('Erro ao cadastrar veículo:', err)
+      setError(getErrorMessage(err))
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleCancel = () => {
-    navigate('/vehicles')
-  }
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
     <div className="page-wrapper">
-      <Navbar />
-
       <main className="form-page">
         <header className="form-header">
-          <button type="button" className="back-link" onClick={handleCancel}>
+          <button
+            type="button"
+            className="back-link"
+            onClick={() => navigate('/vehicles')}
+            disabled={isSubmitting}
+          >
             ← Voltar para listagem
           </button>
+
           <h1>Novo Veículo</h1>
-          <p>Preencha os dados abaixo para cadastrar um novo veículo na frota.</p>
+          <p>Preencha os dados abaixo para cadastrar um novo veículo.</p>
         </header>
 
         <section className="form-card">
           <form onSubmit={handleSubmit}>
             <div className="form-section">
               <div className="section-title">
-                <h2>Informações Técnicas</h2>
-                <p>Identificação e especificações operacionais do veículo.</p>
+                <h2>Dados do Veículo</h2>
+                <p>Informe os dados do veículo e o valor da diária.</p>
               </div>
 
               <div className="form-grid">
@@ -88,8 +146,8 @@ function VehicleForm() {
                     id="brand"
                     type="text"
                     value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    placeholder="Ex: Toyota"
+                    onChange={(event) => setBrand(event.target.value)}
+                    placeholder="Ex.: Toyota"
                     required
                   />
                 </div>
@@ -100,8 +158,8 @@ function VehicleForm() {
                     id="model"
                     type="text"
                     value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    placeholder="Ex: Corolla GR-S"
+                    onChange={(event) => setModel(event.target.value)}
+                    placeholder="Ex.: Corolla"
                     required
                   />
                 </div>
@@ -112,23 +170,23 @@ function VehicleForm() {
                     id="licensePlate"
                     type="text"
                     value={licensePlate}
-                    onChange={(e) => setLicensePlate(e.target.value)}
-                    placeholder="Ex: BRA2E19"
-                    maxLength={8}
+                    onChange={(event) => setLicensePlate(event.target.value.toUpperCase())}
+                    placeholder="Ex.: ABC1D23"
+                    maxLength={7}
                     required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="year">Ano de Fabricação</label>
+                  <label htmlFor="manufactureYear">Ano de Fabricação</label>
                   <input
-                    id="year"
+                    id="manufactureYear"
                     type="number"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    placeholder="Ex: 2024"
                     min="1900"
                     max="2100"
+                    value={manufactureYear}
+                    onChange={(event) => setManufactureYear(event.target.value)}
+                    placeholder="Ex.: 2024"
                     required
                   />
                 </div>
@@ -138,26 +196,27 @@ function VehicleForm() {
                   <input
                     id="mileage"
                     type="number"
-                    value={mileage}
-                    onChange={(e) => setMileage(e.target.value)}
-                    placeholder="Ex: 15000"
                     min="0"
+                    step="1"
+                    value={mileage}
+                    onChange={(event) => setMileage(event.target.value)}
+                    placeholder="Ex.: 35000"
                     required
                   />
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="dailyRate">Valor da Diária</label>
-                  <div className="input-with-prefix">
-                    <span className="currency-symbol">R$</span>
+                  <div className="currency-input">
+                    <span className="currency-prefix">R$</span>
                     <input
                       id="dailyRate"
                       type="number"
-                      step="0.01"
                       min="0"
+                      step="0.01"
                       value={dailyRate}
-                      onChange={(e) => setDailyRate(e.target.value)}
-                      placeholder="150.00"
+                      onChange={(event) => setDailyRate(event.target.value)}
+                      placeholder="0,00"
                       required
                     />
                   </div>
@@ -176,7 +235,7 @@ function VehicleForm() {
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={handleCancel}
+                onClick={() => navigate('/vehicles')}
                 disabled={isSubmitting}
               >
                 Cancelar
@@ -189,7 +248,8 @@ function VehicleForm() {
               >
                 {isSubmitting ? (
                   <>
-                    <span className="spinner" /> Cadastrando...
+                    <span className="spinner" />
+                    Cadastrando...
                   </>
                 ) : (
                   'Cadastrar Veículo'

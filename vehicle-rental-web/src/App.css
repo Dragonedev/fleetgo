@@ -1,56 +1,30 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
+/* =========================================================
+   APP - LAYOUT PRINCIPAL
+========================================================= */
 
-  --bg: #f5f7fb;
-  --border: #e5e7eb;
-
-  --accent: #0051ff;
-  --accent-bg: rgba(0, 81, 255, 0.1);
-  --accent-border: rgba(0, 81, 255, 0.5);
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-
-  font-family: var(--sans);
-  color: var(--text);
-  background: var(--bg);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  min-width: 320px;
+.app {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  background: #030712;
 }
 
-body {
-  background: var(--bg);
+.app-content {
+  flex: 1;
+  min-height: calc(100vh - 64px);
 }
 
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-}
+/* =========================================================
+   SCROLLBAR PERSONALIZADA (já está no index.css)
+   Mantida aqui apenas para referência
+========================================================= */
 
-h1,
-h2,
-h3 {
-  color: var(--text-h);
-}
+/* =========================================================
+   RESPONSIVO
+========================================================= */
 
-button {
-  cursor: pointer;
+@media (max-width: 768px) {
+  .app-content {
+    min-height: calc(100vh - 56px);
+  }
 }

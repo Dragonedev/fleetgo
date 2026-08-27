@@ -1,74 +1,203 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import Navbar from '../../components/Navbar'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+
+// REMOVIDO: import Navbar from '../../components/Navbar'
 import './Rentals.css'
+
+const API_URL = 'http://localhost:8085'
 
 interface RentalDetail {
   id: number
-  customerName?: string
-  vehicleModel?: string
-  customer?: { name: string; document?: string; email?: string; phone?: string }
-  vehicle?: { model: string; licensePlate?: string; brand?: string; category?: string }
+  customerId: number
+  vehicleId: number
+  employeeId: number
   startDate: string
   endDate: string
   status: string
-  totalValue?: number
+  paymentMethod?: string
+  paymentStatus?: string
+  totalAmount?: number
+
+  customer?: {
+    id: number
+    name: string
+    document?: string
+    email?: string
+    phone?: string
+  }
+
+  vehicle?: {
+    id: number
+    model: string
+    licensePlate?: string
+    brand?: string
+    category?: string
+  }
 }
 
 function RentalDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
+
   const [rental, setRental] = useState<RentalDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  // =========================================================
+  // TRATAMENTO DE ERROS
+  // =========================================================
+
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof TypeError) {
+      return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
+    }
+
+    if (error instanceof Error) {
+      return error.message
+    }
+
+    return 'Ocorreu um erro inesperado. Tente novamente.'
+  }
+
+  const getApiErrorMessage = (status: number, data: any): string => {
+    if (data?.message) {
+      return data.message
+    }
+
+    if (data?.error) {
+      return data.error
+    }
+
+    switch (status) {
+      case 400:
+        return 'Os dados informados são inválidos.'
+      case 401:
+        return 'Você não está autorizado a realizar esta operação.'
+      case 403:
+        return 'Você não tem permissão para realizar esta operação.'
+      case 404:
+        return 'A locação solicitada não foi encontrada.'
+      case 409:
+        return 'Não foi possível realizar a operação porque existe um conflito nos dados.'
+      case 500:
+        return 'Ocorreu um erro interno no servidor.'
+      case 502:
+      case 503:
+        return 'O servidor está temporariamente indisponível.'
+      default:
+        return 'Não foi possível realizar a operação. Tente novamente.'
+    }
+  }
+
+  // =========================================================
+  // REQUISIÇÕES
+  // =========================================================
 
   useEffect(() => {
-    fetch(`http://localhost:8085/v1/rentals/${id}`)
-      .then((response) => {
+    const loadRental = async () => {
+      try {
+        setLoading(true)
+        setError('')
+
+        const response = await fetch(`${API_URL}/v1/rental-orders/${id}`)
+
         if (!response.ok) {
-          throw new Error('Erro ao carregar detalhes da locação')
+          const data = await response.json().catch(() => null)
+          throw new Error(getApiErrorMessage(response.status, data))
         }
-        return response.json()
-      })
-      .then((data) => setRental(data))
-      .catch((error) => console.error('Erro na requisição:', error))
-      .finally(() => setLoading(false))
+
+        const data: RentalDetail = await response.json()
+        setRental(data)
+      } catch (err) {
+        console.error('Erro ao carregar locação:', err)
+        setError(getErrorMessage(err))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (id) {
+      loadRental()
+    }
   }, [id])
+
+  // =========================================================
+  // FUNÇÕES AUXILIARES
+  // =========================================================
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-'
+
     const [datePart] = dateString.split('T')
     const [year, month, day] = datePart.split('-')
+
     if (year && month && day) {
       return `${day}/${month}/${year}`
     }
+
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
   const formatCurrency = (value?: number) => {
-    if (value === undefined || value === null) return 'R$ 0,00'
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    if (value === undefined || value === null) {
+      return 'R$ 0,00'
+    }
+
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
   }
+
+  const renderStatus = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'PENDING':
+        return <span className="badge badge-warning">Pendente</span>
+
+      case 'CONFIRMED':
+        return <span className="badge badge-info">Confirmada</span>
+
+      case 'ACTIVE':
+        return <span className="badge badge-success">Ativa</span>
+
+      case 'COMPLETED':
+        return <span className="badge badge-info">Concluída</span>
+
+      case 'CANCELLED':
+        return <span className="badge badge-danger">Cancelada</span>
+
+      default:
+        return <span className="badge badge-neutral">{status || '—'}</span>
+    }
+  }
+
+  // =========================================================
+  // RENDER PRINCIPAL
+  // =========================================================
 
   return (
     <div className="page-wrapper">
-      <Navbar />
-
       <main className="rentals-page">
         <header className="rentals-header">
           <div>
+            <span className="page-label">FLEETGO</span>
             <h1>Detalhes da Locação #{id}</h1>
-            <p>Visualização das informações consolidadas da reserva.</p>
+            <p>Visualização das informações da locação.</p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="rental-details-actions">
             <button
               type="button"
-              className="action-btn"
+              className="btn-secondary"
               onClick={() => navigate('/rentals')}
             >
-              Voltar
+              ← Voltar
             </button>
-            <Link to={`/rentals/${id}/edit`} className="new-rental-button">
+
+            <Link
+              to={`/rentals/${id}/edit`}
+              className="btn-primary"
+            >
               Editar Locação
             </Link>
           </div>
@@ -76,61 +205,104 @@ function RentalDetails() {
 
         {loading ? (
           <div className="loading-state">
-            <p>Carregando informações...</p>
+            <div className="loading-spinner" />
+            <span>Carregando informações...</span>
           </div>
-        ) : !rental ? (
-          <div className="table-container" style={{ padding: '24px', textAlign: 'center' }}>
-            <p>Locação não encontrada ou erro ao carregar dados.</p>
-            <Link to="/rentals" className="action-btn" style={{ marginTop: '12px', display: 'inline-block' }}>
-              Voltar para a lista
-            </Link>
+        ) : error ? (
+          <div className="error-state">
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={() => navigate('/rentals')}
+              className="retry-button"
+            >
+              Voltar para locações
+            </button>
           </div>
-        ) : (
-          <div className="table-container" style={{ padding: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-              <div>
-                <h3 style={{ marginBottom: '12px', color: '#172033' }}>Informações do Cliente</h3>
-                <p><strong>Nome:</strong> {rental.customerName || rental.customer?.name || '—'}</p>
-                <p><strong>Documento:</strong> {rental.customer?.document || '—'}</p>
-                <p><strong>Contato:</strong> {rental.customer?.phone || rental.customer?.email || '—'}</p>
+        ) : rental ? (
+          <div className="rental-details-card">
+            {/* CLIENTE E VEÍCULO */}
+            <div className="details-grid two-cols">
+              <div className="details-section">
+                <h3 className="details-title">👤 Informações do Cliente</h3>
+                <div className="details-content">
+                  <p>
+                    <strong>Nome:</strong> {rental.customer?.name || '—'}
+                  </p>
+                  <p>
+                    <strong>Documento:</strong> {rental.customer?.document || '—'}
+                  </p>
+                  <p>
+                    <strong>E-mail:</strong> {rental.customer?.email || '—'}
+                  </p>
+                  <p>
+                    <strong>Telefone:</strong> {rental.customer?.phone || '—'}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3 style={{ marginBottom: '12px', color: '#172033' }}>Informações do Veículo</h3>
-                <p><strong>Modelo:</strong> {rental.vehicleModel || rental.vehicle?.model || '—'}</p>
-                <p><strong>Placa:</strong> {rental.vehicle?.licensePlate || '—'}</p>
-                <p><strong>Marca:</strong> {rental.vehicle?.brand || '—'}</p>
+              <div className="details-section">
+                <h3 className="details-title">🚗 Informações do Veículo</h3>
+                <div className="details-content">
+                  <p>
+                    <strong>Veículo:</strong>{' '}
+                    {rental.vehicle?.brand || ''} {rental.vehicle?.model || '—'}
+                  </p>
+                  <p>
+                    <strong>Placa:</strong> {rental.vehicle?.licensePlate || '—'}
+                  </p>
+                  <p>
+                    <strong>Categoria:</strong> {rental.vehicle?.category || '—'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <hr style={{ margin: '24px 0', borderColor: '#e2e8f0', borderStyle: 'solid', borderWidth: '1px 0 0 0' }} />
+            <hr className="details-divider" />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
-              <div>
-                <p><strong>Retirada:</strong></p>
-                <p>{formatDate(rental.startDate)}</p>
+            {/* DATAS E STATUS */}
+            <div className="details-grid three-cols">
+              <div className="details-section">
+                <h3 className="details-title">📅 Retirada</h3>
+                <p className="details-value">{formatDate(rental.startDate)}</p>
               </div>
 
-              <div>
-                <p><strong>Devolução:</strong></p>
-                <p>{formatDate(rental.endDate)}</p>
+              <div className="details-section">
+                <h3 className="details-title">📅 Devolução</h3>
+                <p className="details-value">{formatDate(rental.endDate)}</p>
               </div>
 
-              <div>
-                <p><strong>Status Atual:</strong></p>
-                <p><span className="badge badge-neutral">{rental.status}</span></p>
+              <div className="details-section">
+                <h3 className="details-title">📌 Status</h3>
+                <div className="details-value">{renderStatus(rental.status)}</div>
               </div>
             </div>
 
-            {rental.totalValue !== undefined && (
-              <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
-                <p style={{ fontSize: '18px', fontWeight: 600 }}>
-                  Valor Total: <span style={{ color: '#16a34a' }}>{formatCurrency(rental.totalValue)}</span>
-                </p>
+            {/* PAGAMENTO */}
+            <div className="details-grid two-cols">
+              <div className="details-section">
+                <h3 className="details-title">💳 Pagamento</h3>
+                <p className="details-value">{rental.paymentMethod || '—'}</p>
               </div>
+
+              <div className="details-section">
+                <h3 className="details-title">📊 Status do Pagamento</h3>
+                <p className="details-value">{rental.paymentStatus || '—'}</p>
+              </div>
+            </div>
+
+            {/* VALOR TOTAL */}
+            {rental.totalAmount !== undefined && rental.totalAmount !== null && (
+              <>
+                <hr className="details-divider" />
+                <div className="details-total">
+                  <span className="total-label">Valor Total</span>
+                  <span className="total-value">{formatCurrency(rental.totalAmount)}</span>
+                </div>
+              </>
             )}
           </div>
-        )}
+        ) : null}
       </main>
     </div>
   )

@@ -1,13 +1,10 @@
-import React from 'react'
-import Navbar from '../../components/Navbar'
+// REMOVIDO: import Navbar from '../../components/Navbar'
 import './Home.css'
 
-export const Home: React.FC = () => {
+function Home() {
   return (
-    <div className="home-page">
-      <Navbar />
-
-      <main>
+    <div className="page-wrapper">
+      <main className="home-page">
         <section className="hero-section">
           <div className="hero-content">
             <span className="hero-badge">
@@ -22,7 +19,7 @@ export const Home: React.FC = () => {
 
             <p>
               Otimize operações de locação, controle ativos em tempo real e
-              centralize cadastros de clientes e colaboradores em um ecossistema 
+              centralize cadastros de clientes e colaboradores em um ecossistema
               integrado e altamente escalável.
             </p>
 
@@ -55,7 +52,7 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="hero-visual">
-            <div className="hero-circle"></div>
+            <div className="hero-circle" />
 
             <img
               src="https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1200&q=85"
@@ -67,27 +64,35 @@ export const Home: React.FC = () => {
         <section className="home-features">
           <div className="feature-card">
             <span className="feature-category">CONTROLE DE ATIVOS</span>
+
             <h3>Gestão de Veículos</h3>
+
             <p>
-              Monitoramento individualizado de frota, controle rigoroso de 
+              Monitoramento individualizado de frota, controle rigoroso de
               quilometragem, status operacional e histórico de utilização.
             </p>
           </div>
 
           <div className="feature-card">
-            <span className="feature-category">OPERAÇÃO DE CONTRACTS</span>
+            <span className="feature-category">
+              OPERAÇÃO DE CONTRATOS
+            </span>
+
             <h3>Ciclo de Locação</h3>
+
             <p>
-              Ciclo de vida completo das locações com rastreabilidade de datas, 
+              Ciclo de vida completo das locações com rastreabilidade de datas,
               vinculação de condutores e automação de saídas e devoluções.
             </p>
           </div>
 
           <div className="feature-card">
             <span className="feature-category">GOVERNANÇA</span>
+
             <h3>Gestão de Pessoas</h3>
+
             <p>
-              Administração centralizada de clientes e equipe de colaboradores 
+              Administração centralizada de clientes e equipe de colaboradores
               com níveis de permissão e histórico de interações.
             </p>
           </div>

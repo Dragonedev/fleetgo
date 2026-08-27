@@ -1,0 +1,57 @@
+.customers-page {
+  padding: 40px;
+}
+
+.customers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.customers-header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.customers-header p {
+  margin-top: 8px;
+  color: #6b7280;
+}
+
+.new-customer-button {
+  padding: 12px 20px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.new-customer-button:hover {
+  background-color: #1d4ed8;
+}
+
+.customers-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.customers-table th,
+.customers-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.customers-table th {
+  color: #374151;
+  font-size: 14px;
+}
+
+.customers-table td {
+  color: #4b5563;
+}

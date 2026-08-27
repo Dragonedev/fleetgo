@@ -89,6 +89,82 @@
 }
 
 /* =========================================================
+   GRÁFICO DE BARRAS
+========================================================= */
+
+.dashboard-chart {
+  max-width: 1200px;
+  margin: 0 auto 32px;
+  padding: 24px 28px;
+  background: #0b1329;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.dashboard-chart h2 {
+  color: #f9fafb;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 18px;
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.chart-bar-label {
+  width: 100px;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.chart-bar-track {
+  flex: 1;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 13px;
+  overflow: hidden;
+  position: relative;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  transition: width 0.8s ease;
+  min-width: 30px;
+}
+
+.chart-bar-value {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chart-bar-percent {
+  width: 48px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* =========================================================
    STATS GRID
 ========================================================= */
 
@@ -227,130 +303,6 @@
 }
 
 /* =========================================================
-   RESPONSIVO
-========================================================= */
-
-@media (max-width: 1024px) {
-  .dashboard-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .quick-actions-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-page {
-    padding: 30px 16px;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .dashboard-actions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .dashboard-action-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .dashboard-stats-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .quick-actions-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .quick-action-card {
-    padding: 14px 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-stats-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .quick-actions-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .dashboard-header h1 {
-    font-size: 26px;
-  }
-}
-
-/* =========================================================
-   LOADING / ERROR
-========================================================= */
-
-.dashboard-loading,
-.dashboard-error {
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-
-.dashboard-loading .loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #0051ff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.dashboard-loading span {
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-.dashboard-error p {
-  color: #f87171;
-  font-size: 14px;
-  margin: 0;
-}
-
-.dashboard-error .retry-button {
-  padding: 8px 20px;
-  background: rgba(0, 81, 255, 0.12);
-  color: #60a5fa;
-  border: 1px solid rgba(0, 81, 255, 0.2);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dashboard-error .retry-button:hover {
-  background: rgba(0, 81, 255, 0.2);
-}
-
-/* =========================================================
    ATIVIDADES RECENTES
 ========================================================= */
 
@@ -413,21 +365,249 @@
 .activity-dot.purple {
   background: #a78bfa;
 }
+.activity-dot.gray {
+  background: #6b7280;
+}
 
 .activity-content {
   flex: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .activity-text {
   color: #d1d5db;
   font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.activity-description {
+  color: #9ca3af;
+  font-size: 13px;
+  flex: 1;
+  text-align: left;
 }
 
 .activity-time {
   color: #6b7280;
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.activity-empty {
+  text-align: center;
+  padding: 24px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* =========================================================
+   LOADING / ERROR
+========================================================= */
+
+.dashboard-loading,
+.dashboard-error {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.dashboard-loading .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #0051ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dashboard-loading span {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.dashboard-error p {
+  color: #f87171;
+  font-size: 14px;
+  margin: 0;
+}
+
+.dashboard-error .retry-button {
+  padding: 8px 20px;
+  background: rgba(0, 81, 255, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(0, 81, 255, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-error .retry-button:hover {
+  background: rgba(0, 81, 255, 0.2);
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1024px) {
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 30px 16px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .dashboard-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .dashboard-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .quick-action-card {
+    padding: 14px 18px;
+  }
+
+  .chart-bar-label {
+    width: 70px;
+    font-size: 12px;
+  }
+
+  .chart-bar-percent {
+    width: 40px;
+    font-size: 12px;
+  }
+
+  .activity-content {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .activity-description {
+    order: 3;
+    flex: 1 1 100%;
+    text-align: left;
+    padding-left: 0;
+  }
+
+  .activity-text {
+    font-size: 13px;
+  }
+
+  .activity-time {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 26px;
+  }
+
+  .dashboard-chart {
+    padding: 16px;
+  }
+
+  .chart-bar-item {
+    gap: 8px;
+  }
+
+  .chart-bar-label {
+    width: 60px;
+    font-size: 11px;
+  }
+
+  .chart-bar-track {
+    height: 22px;
+  }
+
+  .chart-bar-fill {
+    padding-right: 6px;
+  }
+
+  .chart-bar-value {
+    font-size: 10px;
+  }
+
+  .chart-bar-percent {
+    width: 35px;
+    font-size: 11px;
+  }
+
+  .activity-item {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+
+  .activity-content {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .activity-text {
+    font-size: 13px;
+  }
+
+  .activity-description {
+    font-size: 12px;
+    flex: 1 1 100%;
+  }
+
+  .activity-time {
+    font-size: 11px;
+  }
 }

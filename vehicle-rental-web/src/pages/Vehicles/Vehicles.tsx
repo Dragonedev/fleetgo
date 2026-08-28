@@ -149,7 +149,7 @@ function Vehicles() {
       setLoading(true)
       setError('')
 
-      const response = await fetch('http://localhost:8085/v1/vehicles')
+      const response = await fetch('${import.meta.env.VITE_API_URL}/v1/vehicles')
 
       if (!response.ok) {
         const data = await response.json().catch(() => null)
@@ -188,7 +188,7 @@ function Vehicles() {
 
     try {
       const response = await fetch(
-        `http://localhost:8085/v1/vehicles/${vehicleToDelete}`,
+        `${import.meta.env.VITE_API_URL}/v1/vehicles/${vehicleToDelete}`,
         {
           method: 'DELETE',
         }

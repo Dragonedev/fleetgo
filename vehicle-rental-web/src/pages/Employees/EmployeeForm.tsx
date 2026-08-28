@@ -13,7 +13,7 @@ interface EmployeeFormData {
   position: string
 }
 
-const API_URL = 'http://localhost:8085/v1/employees'
+const API_URL = '${import.meta.env.VITE_API_URL}/v1/employees'
 
 const INITIAL_FORM_DATA: EmployeeFormData = {
   name: '',

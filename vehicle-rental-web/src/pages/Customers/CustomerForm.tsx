@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 // REMOVIDO: import Navbar from '../../components/Navbar'
 import '../../styles/FormStyles.css'
 
-const API_URL = 'http://localhost:8085/v1/customers'
+const API_URL = '${import.meta.env.VITE_API_URL}/v1/customers'
 
 function CustomerForm() {
   const navigate = useNavigate()

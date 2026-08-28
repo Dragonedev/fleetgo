@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 // REMOVIDO: import Navbar from '../../components/Navbar'
 import '../../styles/FormStyles.css'
 
-const API_URL = 'http://localhost:8085'
+const API_URL = '${import.meta.env.VITE_API_URL}'
 
 interface Customer {
   id: number

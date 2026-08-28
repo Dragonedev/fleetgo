@@ -94,7 +94,7 @@ function EmployeeEdit() {
         setLoading(true)
         setError('')
 
-        const response = await fetch(`http://localhost:8085/v1/employees/${id}`)
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/v1/employees/${id}`)
 
         if (!response.ok) {
           const data = await response.json().catch(() => null)
@@ -151,7 +151,7 @@ function EmployeeEdit() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8085/v1/employees/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/v1/employees/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

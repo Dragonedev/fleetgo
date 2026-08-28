@@ -120,7 +120,7 @@ function Customers() {
       setLoading(true)
       setError('')
 
-      const response = await fetch('${import.meta.env.VITE_API_URL}/v1/customers')
+      const response = await fetch('https://fleetgo-5yk4.onrender.com/v1/customers')
 
       if (!response.ok) {
         const data = await response.json().catch(() => null)
@@ -159,7 +159,7 @@ function Customers() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/v1/customers/${customerToDelete}`,
+        `https://fleetgo-5yk4.onrender.com/v1/customers/${customerToDelete}`,
         {
           method: 'DELETE',
         }

@@ -149,7 +149,7 @@ function Vehicles() {
       setLoading(true)
       setError('')
 
-      const response = await fetch('${import.meta.env.VITE_API_URL}/v1/vehicles')
+      const response = await fetch('https://fleetgo-5yk4.onrender.com/v1/vehicles')
 
       if (!response.ok) {
         const data = await response.json().catch(() => null)
@@ -188,7 +188,7 @@ function Vehicles() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/v1/vehicles/${vehicleToDelete}`,
+        `https://fleetgo-5yk4.onrender.com/v1/vehicles/${vehicleToDelete}`,
         {
           method: 'DELETE',
         }

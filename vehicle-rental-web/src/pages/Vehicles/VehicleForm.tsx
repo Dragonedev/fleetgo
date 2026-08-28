@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 // REMOVIDO: import Navbar from '../../components/Navbar'
 import '../../styles/FormStyles.css'
 
-const API_URL = '${import.meta.env.VITE_API_URL}/v1/vehicles'
+const API_URL = 'https://fleetgo-5yk4.onrender.com/v1/vehicles'
 
 function VehicleForm() {
   const navigate = useNavigate()

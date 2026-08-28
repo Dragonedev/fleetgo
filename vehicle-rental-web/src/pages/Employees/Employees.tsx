@@ -9,7 +9,7 @@ import './Employees.css'
 // TIPOS E INTERFACES
 // =========================================================
 
-const API_URL = '${import.meta.env.VITE_API_URL}/v1/employees'
+const API_URL = 'https://fleetgo-5yk4.onrender.com/v1/employees'
 
 interface Employee {
   id: number

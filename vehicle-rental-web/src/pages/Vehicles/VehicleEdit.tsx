@@ -96,7 +96,7 @@ function VehicleEdit() {
       setLoading(true)
       setError('')
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/v1/vehicles/${id}`)
+      const response = await fetch(`https://fleetgo-5yk4.onrender.com/v1/vehicles/${id}`)
 
       if (!response.ok) {
         const data = await response.json().catch(() => null)
@@ -152,7 +152,7 @@ function VehicleEdit() {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/v1/vehicles/${id}`, {
+      const response = await fetch(`https://fleetgo-5yk4.onrender.com/v1/vehicles/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

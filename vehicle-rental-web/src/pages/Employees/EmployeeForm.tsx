@@ -13,7 +13,7 @@ interface EmployeeFormData {
   position: string
 }
 
-const API_URL = '${import.meta.env.VITE_API_URL}/v1/employees'
+const API_URL = 'https://fleetgo-5yk4.onrender.com/v1/employees'
 
 const INITIAL_FORM_DATA: EmployeeFormData = {
   name: '',

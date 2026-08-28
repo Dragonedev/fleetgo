@@ -6,7 +6,7 @@ spring:
     name: vehicle-rental-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/vehicle_rental_db
+    url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver

@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-
-// REMOVIDO: import Navbar from '../../components/Navbar'
 import './Rentals.css'
-
-// =========================================================
-// TIPOS E INTERFACES
-// =========================================================
 
 const API_URL = 'https://fleetgo-5yk4.onrender.com'
 
@@ -34,45 +28,26 @@ interface Vehicle {
   model: string
 }
 
-// =========================================================
-// COMPONENTE PRINCIPAL
-// =========================================================
-
 function Rentals() {
-  // =========================================================
-  // STATES
-  // =========================================================
-
   const [rentals, setRentals] = useState<Rental[]>([])
   const [customers, setCustomers] = useState<Record<number, Customer>>({})
   const [vehicles, setVehicles] = useState<Record<number, Vehicle>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // =========================================================
-  // TRATAMENTO DE ERROS
-  // =========================================================
-
   const getErrorMessage = (error: unknown): string => {
     if (error instanceof TypeError) {
       return 'Não foi possível conectar ao servidor. Verifique se a API está funcionando.'
     }
-
     if (error instanceof Error) {
       return error.message
     }
-
     return 'Ocorreu um erro inesperado. Tente novamente.'
   }
 
   const getApiErrorMessage = (status: number, data: any): string => {
-    if (data?.message) {
-      return data.message
-    }
-
-    if (data?.error) {
-      return data.error
-    }
+    if (data?.message) return data.message
+    if (data?.error) return data.error
 
     switch (status) {
       case 400:
@@ -95,42 +70,27 @@ function Rentals() {
     }
   }
 
-  // =========================================================
-  // FUNÇÕES AUXILIARES
-  // =========================================================
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) {
-      return '-'
-    }
-
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '-'
     const [datePart] = dateString.split('T')
     const [year, month, day] = datePart.split('-')
-
     if (year && month && day) {
       return `${day}/${month}/${year}`
     }
-
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
 
-  const getCustomerName = (customerId: number) => {
+  const getCustomerName = (customerId: number): string => {
     return customers[customerId]?.name || `Cliente #${customerId}`
   }
 
-  const getVehicleName = (vehicleId: number) => {
+  const getVehicleName = (vehicleId: number): string => {
     const vehicle = vehicles[vehicleId]
-
     if (!vehicle) {
       return `Veículo #${vehicleId}`
     }
-
     return `${vehicle.brand} ${vehicle.model}`
   }
-
-  // =========================================================
-  // REQUISIÇÕES
-  // =========================================================
 
   const loadRentals = async () => {
     try {
@@ -165,7 +125,6 @@ function Rentals() {
         customerList.forEach((customer) => {
           customerMap[customer.id] = customer
         })
-
         setCustomers(customerMap)
       }
 
@@ -179,7 +138,6 @@ function Rentals() {
         vehicleList.forEach((vehicle) => {
           vehicleMap[vehicle.id] = vehicle
         })
-
         setVehicles(vehicleMap)
       }
     } catch (err) {
@@ -194,35 +152,37 @@ function Rentals() {
     loadRentals()
   }, [])
 
-  // =========================================================
-  // RENDER - STATUS
-  // =========================================================
-
   const renderStatus = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'PENDING':
         return <span className="badge badge-warning">Pendente</span>
-
       case 'CONFIRMED':
         return <span className="badge badge-info">Confirmada</span>
-
       case 'ACTIVE':
         return <span className="badge badge-success">Ativa</span>
-
       case 'COMPLETED':
         return <span className="badge badge-info">Concluída</span>
-
       case 'CANCELLED':
         return <span className="badge badge-danger">Cancelada</span>
-
       default:
         return <span className="badge badge-neutral">{status || '—'}</span>
     }
   }
 
-  // =========================================================
-  // RENDER PRINCIPAL
-  // =========================================================
+  const renderPaymentStatus = (status?: string) => {
+    switch (status?.toUpperCase()) {
+      case 'PAID':
+        return <span className="badge badge-success">Pago</span>
+      case 'PENDING':
+        return <span className="badge badge-warning">Pendente</span>
+      case 'OVERDUE':
+        return <span className="badge badge-danger">Vencido</span>
+      case 'CANCELLED':
+        return <span className="badge badge-neutral">Cancelado</span>
+      default:
+        return <span className="badge badge-neutral">{status || '—'}</span>
+    }
+  }
 
   return (
     <div className="page-wrapper">
@@ -230,14 +190,9 @@ function Rentals() {
         <header className="rentals-header">
           <div>
             <span className="page-label">FLEETGO</span>
-
             <h1>Locações</h1>
-
-            <p>
-              Acompanhe e gerencie todos os contratos ativos e encerrados.
-            </p>
+            <p>Acompanhe e gerencie todos os contratos ativos e encerrados.</p>
           </div>
-
           <Link to="/rentals/new" className="new-rental-button">
             <span>+</span>
             Nova Locação
@@ -248,12 +203,8 @@ function Rentals() {
           <div className="rentals-card-header">
             <div>
               <h2>Locações cadastradas</h2>
-
-              <p>
-                Visualize e gerencie todos os contratos de aluguel.
-              </p>
+              <p>Visualize e gerencie todos os contratos de aluguel.</p>
             </div>
-
             <span className="rental-count">
               {rentals.length} {rentals.length === 1 ? 'locação' : 'locações'}
             </span>
@@ -268,19 +219,13 @@ function Rentals() {
             ) : error ? (
               <div className="error-state">
                 <p>{error}</p>
-
-                <button
-                  type="button"
-                  onClick={loadRentals}
-                  className="retry-button"
-                >
+                <button type="button" onClick={loadRentals} className="retry-button">
                   Tentar novamente
                 </button>
               </div>
             ) : rentals.length === 0 ? (
               <div className="empty-state">
                 <p>Nenhuma locação cadastrada.</p>
-
                 <Link to="/rentals/new" className="empty-state-link">
                   Cadastrar primeira locação
                 </Link>
@@ -295,17 +240,16 @@ function Rentals() {
                     <th>Retirada</th>
                     <th>Devolução</th>
                     <th>Status</th>
+                    <th>Pagamento</th>
                     <th className="actions-column">Ações</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {rentals.map((rental) => (
                     <tr key={rental.id}>
                       <td>
                         <span className="rental-id">#{rental.id}</span>
                       </td>
-
                       <td>
                         <div className="rental-customer">
                           <span className="customer-name">
@@ -313,7 +257,6 @@ function Rentals() {
                           </span>
                         </div>
                       </td>
-
                       <td>
                         <div className="rental-vehicle">
                           <span className="vehicle-model">
@@ -321,35 +264,24 @@ function Rentals() {
                           </span>
                         </div>
                       </td>
-
                       <td>
-                        <span className="rental-date">
-                          {formatDate(rental.startDate)}
-                        </span>
+                        <span className="rental-date">{formatDate(rental.startDate)}</span>
                       </td>
-
                       <td>
-                        <span className="rental-date">
-                          {formatDate(rental.endDate)}
-                        </span>
+                        <span className="rental-date">{formatDate(rental.endDate)}</span>
                       </td>
-
                       <td>{renderStatus(rental.status)}</td>
-
+                      <td>{renderPaymentStatus(rental.paymentStatus)}</td>
                       <td>
                         <div className="table-actions">
-                          <Link
-                            to={`/rentals/${rental.id}`}
-                            className="action-button"
-                          >
+                          <Link to={`/rentals/${rental.id}`} className="action-button">
                             Detalhes
                           </Link>
-
-                          <Link
-                            to={`/rentals/${rental.id}/edit`}
-                            className="action-button"
-                          >
+                          <Link to={`/rentals/${rental.id}/edit`} className="action-button">
                             Editar
+                          </Link>
+                          <Link to={`/rentals/${rental.id}/payment`} className="action-button payment">
+                            Pagamento
                           </Link>
                         </div>
                       </td>

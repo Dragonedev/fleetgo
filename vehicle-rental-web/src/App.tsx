@@ -5,7 +5,7 @@ import Sidebar from './components/Sidebar'
 import { SidebarProvider } from './context/SidebarContext'
 
 import Home from './pages/Home/Home'
-import Dashboard from './pages/Dashboard/Dashboard'  // ← IMPORTAÇÃO DO DASHBOARD
+import Dashboard from './pages/Dashboard/Dashboard'
 
 import Vehicles from './pages/Vehicles/Vehicles'
 import VehicleForm from './pages/Vehicles/VehicleForm'
@@ -21,6 +21,11 @@ import RentalForm from './pages/RentalOrders/RentalForm'
 import RentalEdit from './pages/RentalOrders/RentalEdit'
 import RentalDetails from './pages/RentalOrders/RentalDetails'
 
+// ✅ IMPORTE O COMPONENTE PAYMENT
+import Payment from './pages/Payment/Payment'  // Se estiver dentro de RentalOrders
+// OU
+// import Payment from './pages/payment/Payment'  // Se estiver em pages/payment/
+
 import './App.css'
 
 function App() {
@@ -35,7 +40,7 @@ function App() {
               {/* HOME */}
               <Route path="/" element={<Home />} />
 
-              {/* DASHBOARD - ADICIONAR ESTA ROTA */}
+              {/* DASHBOARD */}
               <Route path="/dashboard" element={<Dashboard />} />
 
               {/* VEHICLES */}
@@ -58,6 +63,9 @@ function App() {
               <Route path="/rentals/new" element={<RentalForm />} />
               <Route path="/rentals/:id" element={<RentalDetails />} />
               <Route path="/rentals/:id/edit" element={<RentalEdit />} />
+
+              {/* ✅ ADICIONE A ROTA DE PAGAMENTO AQUI */}
+              <Route path="/rentals/:id/payment" element={<Payment />} />
             </Routes>
           </main>
         </div>
